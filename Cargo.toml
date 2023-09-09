@@ -2,7 +2,9 @@
 name = "provide"
 version = "0.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+description = "Truly zero cost dependency injection"
+authors = ["tuguzT <timurka.tugushev@gmail.com>"]
+repository = "https://github.com/tuguzT/provide"
+license = "MIT OR Apache-2.0"
+keywords = ["dependency-injection", "no-std"]
+categories = ["data-structures", "rust-patterns", "algorithms", "no-std"]

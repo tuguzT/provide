@@ -1,14 +1,8 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+//! Truly zero cost dependency injection.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// TODO crate documentation
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+#![warn(clippy::all)]
+#![warn(missing_docs)]
+#![forbid(unsafe_code)]
+#![no_std]
