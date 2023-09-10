@@ -1,7 +1,9 @@
 //! Truly zero cost dependency injection — in safe and stable Rust.
 //!
-//! This crate defines a concept of **providers** — types which provide some dependency
-//! by value, shared or unique reference.
+//! This crate defines some key concepts:
+//! - **providers** are types which provide some dependency by value, shared or unique reference
+//! - **context** types represent different ways to provide some dependency
+//! - **injectors** are types which create requested values from contained dependencies
 
 // TODO crate documentation
 
@@ -12,7 +14,7 @@
 
 pub use self::{
     provide::{Provide, ProvideMut, ProvideRef},
-    with::With,
+    with::{ProvideWith, ProvideWithMut, ProvideWithRef, With},
 };
 
 mod provide;

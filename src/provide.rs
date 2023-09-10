@@ -1,8 +1,6 @@
 use core::ops::{Deref, DerefMut};
 
-/// Type of provider which provides dependency *by **value***.
-///
-/// Type of dependency is determined from the generic type parameter `T`.
+/// Type of provider which provides dependency by *value*.
 ///
 /// This trait can be interpreted as an extension of [`Into`] trait
 /// but with the ability to return remaining part of the provider to be used later
@@ -13,7 +11,8 @@ pub trait Provide<T> {
     /// Remaining part of the provider after providing dependency by value.
     type Remainder;
 
-    /// Provides dependency *by **value***, also returning remaining part of the provider.
+    /// Provides dependency by *value*, also returning
+    /// [remaining part](Provide::Remainder) of the provider.
     ///
     /// # Examples
     ///
@@ -37,9 +36,7 @@ where
     }
 }
 
-/// Type of provider which provides dependency *by **shared** reference*.
-///
-/// Type of dependency is determined from the generic type parameter `T`.
+/// Type of provider which provides dependency by *shared reference*.
 ///
 /// This trait can be interpreted as an extension of [`AsRef`] trait
 /// but with the ability to return not only plain shared references.
@@ -55,7 +52,7 @@ where
         Self: 'me,
         T: 'me;
 
-    /// Provides dependency *by **shared** reference*.
+    /// Provides dependency by *shared reference*.
     ///
     /// # Examples
     ///
@@ -82,9 +79,7 @@ where
     }
 }
 
-/// Type of provider which provides dependency *by **unique** reference*.
-///
-/// Type of dependency is determined from the generic type parameter `T`.
+/// Type of provider which provides dependency by *unique reference*.
 ///
 /// This trait can be interpreted as an extension of [`AsMut`] trait
 /// but with the ability to return not only plain unique references.
@@ -100,7 +95,7 @@ where
         Self: 'me,
         T: 'me;
 
-    /// Provides dependency *by **unique** reference*.
+    /// Provides dependency by *unique reference*.
     ///
     /// # Examples
     ///
