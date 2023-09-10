@@ -1,10 +1,12 @@
+//! Define different ways to provide some dependency.
+//!
+//! See [crate] documentation for more.
+
 use core::ops::{Deref, DerefMut};
 
-use crate::{Provide, ProvideMut, ProvideRef};
+use crate::{context::Empty, Provide, ProvideMut, ProvideRef};
 
 /// Type of provider which can be created from provided dependency.
-///
-/// Type of dependency is determined from the generic type parameter `T`.
 ///
 /// This trait can be used to emulate extension of self type with dependency type,
 /// where the [output](With::Output) is product type consisting of self and provided dependency.
@@ -19,7 +21,7 @@ pub trait With<T> {
     /// # Examples
     ///
     /// ```
-    /// use provide::With;
+    /// use provide::with::With;
     ///
     /// todo!()
     /// ```
@@ -52,20 +54,20 @@ pub trait ProvideWith<T, C> {
     /// # Examples
     ///
     /// ```
-    /// use provide::ProvideWith;
+    /// use provide::with::ProvideWith;
     ///
     /// todo!()
     /// ```
     fn provide_with(self, context: C) -> (T, Self::Remainder);
 }
 
-impl<T, U> ProvideWith<T, ()> for U
+impl<T, U> ProvideWith<T, Empty> for U
 where
     U: Provide<T>,
 {
     type Remainder = U::Remainder;
 
-    fn provide_with(self, _: ()) -> (T, Self::Remainder) {
+    fn provide_with(self, _: Empty) -> (T, Self::Remainder) {
         self.provide()
     }
 }
@@ -94,14 +96,14 @@ where
     /// # Examples
     ///
     /// ```
-    /// use provide::ProvideWithRef;
+    /// use provide::with::ProvideWithRef;
     ///
     /// todo!()
     /// ```
     fn provide_with_ref(&self, context: C) -> Self::Ref<'_>;
 }
 
-impl<T, U> ProvideWithRef<T, ()> for U
+impl<T, U> ProvideWithRef<T, Empty> for U
 where
     T: ?Sized,
     U: ProvideRef<T> + ?Sized,
@@ -111,7 +113,7 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_ref(&self, _: ()) -> Self::Ref<'_> {
+    fn provide_with_ref(&self, _: Empty) -> Self::Ref<'_> {
         self.provide_ref()
     }
 }
@@ -140,14 +142,14 @@ where
     /// # Examples
     ///
     /// ```
-    /// use provide::ProvideWithMut;
+    /// use provide::with::ProvideWithMut;
     ///
     /// todo!()
     /// ```
     fn provide_with_mut(&mut self, context: C) -> Self::Mut<'_>;
 }
 
-impl<T, U> ProvideWithMut<T, ()> for U
+impl<T, U> ProvideWithMut<T, Empty> for U
 where
     T: ?Sized,
     U: ProvideMut<T> + ?Sized,
@@ -157,7 +159,7 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_mut(&mut self, _: ()) -> Self::Mut<'_> {
+    fn provide_with_mut(&mut self, _: Empty) -> Self::Mut<'_> {
         self.provide_mut()
     }
 }

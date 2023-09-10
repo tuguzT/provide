@@ -12,10 +12,9 @@
 #![forbid(unsafe_code)]
 #![no_std]
 
-pub use self::{
-    provide::{Provide, ProvideMut, ProvideRef},
-    with::{ProvideWith, ProvideWithMut, ProvideWithRef, With},
-};
+pub use self::provide::{Provide, ProvideMut, ProvideRef};
+
+pub mod context;
+pub mod with;
 
 mod provide;
-mod with;
