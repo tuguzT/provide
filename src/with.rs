@@ -4,7 +4,11 @@
 
 use core::ops::{Deref, DerefMut};
 
-use crate::{context::Empty, Provide, ProvideMut, ProvideRef};
+use crate::{
+    context::{CloneRef, CloneRefWith, Empty},
+    deref::DerefWrapper,
+    Provide, ProvideMut, ProvideRef,
+};
 
 /// Type of provider which can be created from provided dependency.
 ///
@@ -72,6 +76,33 @@ where
     }
 }
 
+impl<T, U> ProvideWith<T, CloneRef> for U
+where
+    T: Clone,
+    U: ProvideRef<T>,
+{
+    type Remainder = U;
+
+    fn provide_with(self, _: CloneRef) -> (T, Self::Remainder) {
+        let dependency = self.provide_ref().clone();
+        (dependency, self)
+    }
+}
+
+impl<T, U, C> ProvideWith<T, CloneRefWith<C>> for U
+where
+    T: Clone,
+    U: ProvideRefWith<T, C>,
+{
+    type Remainder = U;
+
+    fn provide_with(self, context: CloneRefWith<C>) -> (T, Self::Remainder) {
+        let context = context.into_inner();
+        let dependency = self.provide_ref_with(context).clone();
+        (dependency, self)
+    }
+}
+
 /// Type of provider which provides dependency by *shared reference*,
 /// but with additional context provided by the caller.
 ///
@@ -80,7 +111,7 @@ where
 /// so it is possible to *define many ways* of how dependency can be provided.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideWithRef<T, C>
+pub trait ProvideRefWith<T, C>
 where
     T: ?Sized,
 {
@@ -96,16 +127,16 @@ where
     /// # Examples
     ///
     /// ```
-    /// use provide::with::ProvideWithRef;
+    /// use provide::with::ProvideRefWith;
     ///
     /// todo!()
     /// ```
-    fn provide_with_ref<'me>(&'me self, context: C) -> Self::Ref<'me>
+    fn provide_ref_with<'me>(&'me self, context: C) -> Self::Ref<'me>
     where
         T: 'me;
 }
 
-impl<T, U> ProvideWithRef<T, Empty> for U
+impl<T, U> ProvideRefWith<T, Empty> for U
 where
     T: ?Sized,
     U: ProvideRef<T> + ?Sized,
@@ -115,11 +146,50 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_ref<'me>(&'me self, _: Empty) -> Self::Ref<'me>
+    fn provide_ref_with<'me>(&'me self, _: Empty) -> Self::Ref<'me>
     where
         T: 'me,
     {
         self.provide_ref()
+    }
+}
+
+impl<T, U> ProvideRefWith<T, CloneRef> for U
+where
+    T: Clone,
+    U: ProvideRef<T> + ?Sized,
+{
+    type Ref<'me> = DerefWrapper<T>
+    where
+        Self: 'me,
+        T: 'me;
+
+    fn provide_ref_with<'me>(&'me self, _: CloneRef) -> Self::Ref<'me>
+    where
+        T: 'me,
+    {
+        let dependency = self.provide_ref().clone();
+        dependency.into()
+    }
+}
+
+impl<T, U, C> ProvideRefWith<T, CloneRefWith<C>> for U
+where
+    T: Clone,
+    U: ProvideRefWith<T, C> + ?Sized,
+{
+    type Ref<'me> = DerefWrapper<T>
+    where
+        Self: 'me,
+        T: 'me;
+
+    fn provide_ref_with<'me>(&'me self, context: CloneRefWith<C>) -> Self::Ref<'me>
+    where
+        T: 'me,
+    {
+        let context = context.into_inner();
+        let dependency = self.provide_ref_with(context).clone();
+        dependency.into()
     }
 }
 
@@ -131,7 +201,7 @@ where
 /// so it is possible to *define many ways* of how dependency can be provided.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideWithMut<T, C>
+pub trait ProvideMutWith<T, C>
 where
     T: ?Sized,
 {
@@ -147,16 +217,16 @@ where
     /// # Examples
     ///
     /// ```
-    /// use provide::with::ProvideWithMut;
+    /// use provide::with::ProvideMutWith;
     ///
     /// todo!()
     /// ```
-    fn provide_with_mut<'me>(&'me mut self, context: C) -> Self::Mut<'me>
+    fn provide_mut_with<'me>(&'me mut self, context: C) -> Self::Mut<'me>
     where
         T: 'me;
 }
 
-impl<T, U> ProvideWithMut<T, Empty> for U
+impl<T, U> ProvideMutWith<T, Empty> for U
 where
     T: ?Sized,
     U: ProvideMut<T> + ?Sized,
@@ -166,7 +236,7 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_mut<'me>(&'me mut self, _: Empty) -> Self::Mut<'me>
+    fn provide_mut_with<'me>(&'me mut self, _: Empty) -> Self::Mut<'me>
     where
         T: 'me,
     {

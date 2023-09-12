@@ -15,6 +15,7 @@
 pub use self::provide::{Provide, ProvideMut, ProvideRef};
 
 pub mod context;
+pub mod deref;
 pub mod with;
 
 mod provide;
