@@ -100,7 +100,9 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_with_ref(&self, context: C) -> Self::Ref<'_>;
+    fn provide_with_ref<'me>(&'me self, context: C) -> Self::Ref<'me>
+    where
+        T: 'me;
 }
 
 impl<T, U> ProvideWithRef<T, Empty> for U
@@ -113,7 +115,10 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_ref(&self, _: Empty) -> Self::Ref<'_> {
+    fn provide_with_ref<'me>(&'me self, _: Empty) -> Self::Ref<'me>
+    where
+        T: 'me,
+    {
         self.provide_ref()
     }
 }
@@ -146,7 +151,9 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_with_mut(&mut self, context: C) -> Self::Mut<'_>;
+    fn provide_with_mut<'me>(&'me mut self, context: C) -> Self::Mut<'me>
+    where
+        T: 'me;
 }
 
 impl<T, U> ProvideWithMut<T, Empty> for U
@@ -159,7 +166,10 @@ where
         Self: 'me,
         T: 'me;
 
-    fn provide_with_mut(&mut self, _: Empty) -> Self::Mut<'_> {
+    fn provide_with_mut<'me>(&'me mut self, _: Empty) -> Self::Mut<'me>
+    where
+        T: 'me,
+    {
         self.provide_mut()
     }
 }

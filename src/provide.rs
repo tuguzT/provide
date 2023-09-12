@@ -61,20 +61,25 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_ref(&self) -> Self::Ref<'_>;
+    fn provide_ref<'me>(&'me self) -> Self::Ref<'me>
+    where
+        T: 'me;
 }
 
 impl<T, U> ProvideRef<T> for U
 where
     T: ?Sized,
-    U: AsRef<T>,
+    U: AsRef<T> + ?Sized,
 {
     type Ref<'me> = &'me T
     where
         Self: 'me,
         T: 'me;
 
-    fn provide_ref(&self) -> Self::Ref<'_> {
+    fn provide_ref<'me>(&'me self) -> Self::Ref<'me>
+    where
+        T: 'me,
+    {
         self.as_ref()
     }
 }
@@ -104,20 +109,25 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_mut(&mut self) -> Self::Mut<'_>;
+    fn provide_mut<'me>(&'me mut self) -> Self::Mut<'me>
+    where
+        T: 'me;
 }
 
 impl<T, U> ProvideMut<T> for U
 where
     T: ?Sized,
-    U: AsMut<T>,
+    U: AsMut<T> + ?Sized,
 {
     type Mut<'me> = &'me mut T
     where
         Self: 'me,
         T: 'me;
 
-    fn provide_mut(&mut self) -> Self::Mut<'_> {
+    fn provide_mut<'me>(&'me mut self) -> Self::Mut<'me>
+    where
+        T: 'me,
+    {
         self.as_mut()
     }
 }
