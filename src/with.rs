@@ -5,7 +5,7 @@
 use core::ops::{Deref, DerefMut};
 
 use crate::{
-    context::{CloneOwned, CloneOwnedWith, CloneRef, CloneRefWith, Empty},
+    context::{CloneMut, CloneMutWith, CloneOwned, CloneOwnedWith, CloneRef, CloneRefWith, Empty},
     deref::DerefWrapper,
     Provide, ProvideMut, ProvideRef,
 };
@@ -130,6 +130,33 @@ where
     fn provide_with(self, context: CloneRefWith<C>) -> (T, Self::Remainder) {
         let context = context.into_inner();
         let dependency = self.provide_ref_with(context).clone();
+        (dependency, self)
+    }
+}
+
+impl<T, U> ProvideWith<T, CloneMut> for U
+where
+    T: Clone,
+    U: ProvideMut<T>,
+{
+    type Remainder = U;
+
+    fn provide_with(mut self, _: CloneMut) -> (T, Self::Remainder) {
+        let dependency = self.provide_mut().clone();
+        (dependency, self)
+    }
+}
+
+impl<T, U, C> ProvideWith<T, CloneMutWith<C>> for U
+where
+    T: Clone,
+    U: ProvideMutWith<T, C>,
+{
+    type Remainder = U;
+
+    fn provide_with(mut self, context: CloneMutWith<C>) -> (T, Self::Remainder) {
+        let context = context.into_inner();
+        let dependency = self.provide_mut_with(context).clone();
         (dependency, self)
     }
 }
@@ -310,6 +337,45 @@ where
     {
         let context = context.into_inner();
         let dependency = (*self).provide_ref_with(context).clone();
+        dependency.into()
+    }
+}
+
+impl<T, U> ProvideMutWith<T, CloneMut> for U
+where
+    T: Clone,
+    U: ProvideMut<T> + ?Sized,
+{
+    type Mut<'me> = DerefWrapper<T>
+    where
+        Self: 'me,
+        T: 'me;
+
+    fn provide_mut_with<'me>(&'me mut self, _: CloneMut) -> Self::Mut<'me>
+    where
+        T: 'me,
+    {
+        let dependency = self.provide_mut().clone();
+        dependency.into()
+    }
+}
+
+impl<T, U, C> ProvideMutWith<T, CloneMutWith<C>> for U
+where
+    T: Clone,
+    U: ProvideMutWith<T, C> + ?Sized,
+{
+    type Mut<'me> = DerefWrapper<T>
+    where
+        Self: 'me,
+        T: 'me;
+
+    fn provide_mut_with<'me>(&'me mut self, context: CloneMutWith<C>) -> Self::Mut<'me>
+    where
+        T: 'me,
+    {
+        let context = context.into_inner();
+        let dependency = self.provide_mut_with(context).clone();
         dependency.into()
     }
 }
