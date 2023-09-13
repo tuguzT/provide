@@ -9,18 +9,18 @@ use core::{
 use crate::with::With;
 
 /// Context which allows to provide dependency by *creating it from*
-/// another dependency by *shared reference*.
+/// another dependency by *unique reference*.
 ///
 /// This is possible if:
 /// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideRef`](crate::ProvideRef)`<D>`,
+/// - provider implements [`ProvideMut`](crate::ProvideMut)`<D>`,
 ///
 /// where `T` is the type of dependency to provide.
-pub struct FromDependencyRef<D>(PhantomData<fn() -> D>)
+pub struct FromDependencyMut<D>(PhantomData<fn() -> D>)
 where
     D: ?Sized;
 
-impl<D> FromDependencyRef<D>
+impl<D> FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -30,17 +30,17 @@ where
     }
 }
 
-impl<D> Debug for FromDependencyRef<D>
+impl<D> Debug for FromDependencyMut<D>
 where
     D: ?Sized,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let type_name = core::any::type_name::<D>();
-        write!(f, "FromDependencyRef<{type_name}>")
+        write!(f, "FromDependencyMut<{type_name}>")
     }
 }
 
-impl<D> Default for FromDependencyRef<D>
+impl<D> Default for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -49,7 +49,7 @@ where
     }
 }
 
-impl<D> Clone for FromDependencyRef<D>
+impl<D> Clone for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -58,9 +58,9 @@ where
     }
 }
 
-impl<D> Copy for FromDependencyRef<D> where D: ?Sized {}
+impl<D> Copy for FromDependencyMut<D> where D: ?Sized {}
 
-impl<D> PartialEq for FromDependencyRef<D>
+impl<D> PartialEq for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -71,9 +71,9 @@ where
     }
 }
 
-impl<D> Eq for FromDependencyRef<D> where D: ?Sized {}
+impl<D> Eq for FromDependencyMut<D> where D: ?Sized {}
 
-impl<D> PartialOrd for FromDependencyRef<D>
+impl<D> PartialOrd for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -84,7 +84,7 @@ where
     }
 }
 
-impl<D> Ord for FromDependencyRef<D>
+impl<D> Ord for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -95,7 +95,7 @@ where
     }
 }
 
-impl<D> Hash for FromDependencyRef<D>
+impl<D> Hash for FromDependencyMut<D>
 where
     D: ?Sized,
 {
@@ -105,11 +105,11 @@ where
     }
 }
 
-impl<D, C> With<C> for FromDependencyRef<D>
+impl<D, C> With<C> for FromDependencyMut<D>
 where
     D: ?Sized,
 {
-    type Output = FromDependencyRefWith<D, C>;
+    type Output = FromDependencyMutWith<D, C>;
 
     fn with(self, dependency: C) -> Self::Output {
         dependency.into()
@@ -117,15 +117,15 @@ where
 }
 
 /// Context which allows to provide dependency by *creating it from*
-/// another dependency by *shared reference*
+/// another dependency by *unique reference*
 /// which could be provided with additional context.
 ///
 /// This is possible if:
 /// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideRefWith`](crate::with::ProvideRefWith)`<D, C>`,
+/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<D, C>`,
 ///
 /// where `T` is the type of dependency to provide.
-pub struct FromDependencyRefWith<D, C>
+pub struct FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -135,7 +135,7 @@ where
     pub context: C,
 }
 
-impl<D, C> FromDependencyRefWith<D, C>
+impl<D, C> FromDependencyMutWith<D, C>
 where
     D: ?Sized,
 {
@@ -152,7 +152,7 @@ where
     }
 }
 
-impl<D, C> From<C> for FromDependencyRefWith<D, C>
+impl<D, C> From<C> for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
 {
@@ -161,7 +161,7 @@ where
     }
 }
 
-impl<D, C> Debug for FromDependencyRefWith<D, C>
+impl<D, C> Debug for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Debug + ?Sized,
@@ -169,11 +169,11 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let Self { context, .. } = self;
         let type_name = core::any::type_name::<D>();
-        write!(f, "FromDependencyRefWith<{type_name}>({context:?})")
+        write!(f, "FromDependencyMutWith<{type_name}>({context:?})")
     }
 }
 
-impl<D, C> Default for FromDependencyRefWith<D, C>
+impl<D, C> Default for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Default,
@@ -184,7 +184,7 @@ where
     }
 }
 
-impl<D, C> Clone for FromDependencyRefWith<D, C>
+impl<D, C> Clone for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Clone,
@@ -196,14 +196,14 @@ where
     }
 }
 
-impl<D, C> Copy for FromDependencyRefWith<D, C>
+impl<D, C> Copy for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Copy,
 {
 }
 
-impl<D, C> PartialEq for FromDependencyRefWith<D, C>
+impl<D, C> PartialEq for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: PartialEq + ?Sized,
@@ -215,14 +215,14 @@ where
     }
 }
 
-impl<D, C> Eq for FromDependencyRefWith<D, C>
+impl<D, C> Eq for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Eq + ?Sized,
 {
 }
 
-impl<D, C> PartialOrd for FromDependencyRefWith<D, C>
+impl<D, C> PartialOrd for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: PartialOrd + ?Sized,
@@ -234,7 +234,7 @@ where
     }
 }
 
-impl<D, C> Ord for FromDependencyRefWith<D, C>
+impl<D, C> Ord for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Ord + ?Sized,
@@ -246,7 +246,7 @@ where
     }
 }
 
-impl<D, C> Hash for FromDependencyRefWith<D, C>
+impl<D, C> Hash for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: Hash + ?Sized,
@@ -257,7 +257,7 @@ where
     }
 }
 
-impl<D, C> Deref for FromDependencyRefWith<D, C>
+impl<D, C> Deref for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -270,7 +270,7 @@ where
     }
 }
 
-impl<D, C> DerefMut for FromDependencyRefWith<D, C>
+impl<D, C> DerefMut for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -281,7 +281,7 @@ where
     }
 }
 
-impl<D, C, T> AsRef<T> for FromDependencyRefWith<D, C>
+impl<D, C, T> AsRef<T> for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -293,7 +293,7 @@ where
     }
 }
 
-impl<D, C, T> AsMut<T> for FromDependencyRefWith<D, C>
+impl<D, C, T> AsMut<T> for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -305,7 +305,7 @@ where
     }
 }
 
-impl<D, C> Borrow<C> for FromDependencyRefWith<D, C>
+impl<D, C> Borrow<C> for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,
@@ -315,7 +315,7 @@ where
     }
 }
 
-impl<D, C> BorrowMut<C> for FromDependencyRefWith<D, C>
+impl<D, C> BorrowMut<C> for FromDependencyMutWith<D, C>
 where
     D: ?Sized,
     C: ?Sized,

@@ -32,7 +32,8 @@ mod impls {
                 CloneDependencyRefWith, CloneDependencyWith,
             },
             convert::{
-                FromDependency, FromDependencyRef, FromDependencyRefWith, FromDependencyWith,
+                FromDependency, FromDependencyMut, FromDependencyMutWith, FromDependencyRef,
+                FromDependencyRefWith, FromDependencyWith,
             },
             Empty,
         },
@@ -108,6 +109,37 @@ mod impls {
         fn provide_with(self, context: FromDependencyRefWith<D, C>) -> (T, Self::Remainder) {
             let context = context.into_inner();
             let dependency = self.provide_ref_with(context);
+            let dependency = dependency.into();
+            (dependency, self)
+        }
+    }
+
+    impl<T, U, D> ProvideWith<T, FromDependencyMut<D>> for U
+    where
+        U: ProvideMut<D>,
+        for<'any> U::Mut<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Remainder = U;
+
+        fn provide_with(mut self, _: FromDependencyMut<D>) -> (T, Self::Remainder) {
+            let dependency = self.provide_mut();
+            let dependency = dependency.into();
+            (dependency, self)
+        }
+    }
+
+    impl<T, U, D, C> ProvideWith<T, FromDependencyMutWith<D, C>> for U
+    where
+        U: ProvideMutWith<D, C>,
+        for<'any> U::Mut<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Remainder = U;
+
+        fn provide_with(mut self, context: FromDependencyMutWith<D, C>) -> (T, Self::Remainder) {
+            let context = context.into_inner();
+            let dependency = self.provide_mut_with(context);
             let dependency = dependency.into();
             (dependency, self)
         }

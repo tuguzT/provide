@@ -16,37 +16,54 @@ use crate::with::With;
 /// - provider implements [`Provide`](crate::Provide)`<D>`,
 ///
 /// where `T` is the type of dependency to provide.
-pub struct FromDependency<D>(PhantomData<fn() -> D>);
+pub struct FromDependency<D>(PhantomData<fn() -> D>)
+where
+    D: ?Sized;
 
-impl<D> FromDependency<D> {
+impl<D> FromDependency<D>
+where
+    D: ?Sized,
+{
     /// Creates new from dependency context.
     pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<D> Debug for FromDependency<D> {
+impl<D> Debug for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let type_name = core::any::type_name::<D>();
         write!(f, "FromDependency<{type_name}>")
     }
 }
 
-impl<D> Default for FromDependency<D> {
+impl<D> Default for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<D> Clone for FromDependency<D> {
+impl<D> Clone for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<D> Copy for FromDependency<D> {}
+impl<D> Copy for FromDependency<D> where D: ?Sized {}
 
-impl<D> PartialEq for FromDependency<D> {
+impl<D> PartialEq for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn eq(&self, other: &Self) -> bool {
         let Self(this) = self;
         let Self(other) = other;
@@ -54,9 +71,12 @@ impl<D> PartialEq for FromDependency<D> {
     }
 }
 
-impl<D> Eq for FromDependency<D> {}
+impl<D> Eq for FromDependency<D> where D: ?Sized {}
 
-impl<D> PartialOrd for FromDependency<D> {
+impl<D> PartialOrd for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         let Self(this) = self;
         let Self(other) = other;
@@ -64,7 +84,10 @@ impl<D> PartialOrd for FromDependency<D> {
     }
 }
 
-impl<D> Ord for FromDependency<D> {
+impl<D> Ord for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         let Self(this) = self;
         let Self(other) = other;
@@ -72,14 +95,20 @@ impl<D> Ord for FromDependency<D> {
     }
 }
 
-impl<D> Hash for FromDependency<D> {
+impl<D> Hash for FromDependency<D>
+where
+    D: ?Sized,
+{
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         let Self(this) = self;
         this.hash(state)
     }
 }
 
-impl<D, C> With<C> for FromDependency<D> {
+impl<D, C> With<C> for FromDependency<D>
+where
+    D: ?Sized,
+{
     type Output = FromDependencyWith<D, C>;
 
     fn with(self, dependency: C) -> Self::Output {
@@ -98,6 +127,7 @@ impl<D, C> With<C> for FromDependency<D> {
 /// where `T` is the type of dependency to provide.
 pub struct FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     phantom: PhantomData<fn() -> D>,
@@ -105,7 +135,10 @@ where
     pub context: C,
 }
 
-impl<D, C> FromDependencyWith<D, C> {
+impl<D, C> FromDependencyWith<D, C>
+where
+    D: ?Sized,
+{
     /// Creates self from provided context.
     pub const fn new(context: C) -> Self {
         let phantom = PhantomData;
@@ -119,7 +152,10 @@ impl<D, C> FromDependencyWith<D, C> {
     }
 }
 
-impl<D, C> From<C> for FromDependencyWith<D, C> {
+impl<D, C> From<C> for FromDependencyWith<D, C>
+where
+    D: ?Sized,
+{
     fn from(context: C) -> Self {
         Self::new(context)
     }
@@ -127,6 +163,7 @@ impl<D, C> From<C> for FromDependencyWith<D, C> {
 
 impl<D, C> Debug for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: Debug + ?Sized,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
@@ -138,6 +175,7 @@ where
 
 impl<D, C> Default for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: Default,
 {
     fn default() -> Self {
@@ -148,6 +186,7 @@ where
 
 impl<D, C> Clone for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: Clone,
 {
     fn clone(&self) -> Self {
@@ -157,10 +196,16 @@ where
     }
 }
 
-impl<D, C> Copy for FromDependencyWith<D, C> where C: Copy {}
+impl<D, C> Copy for FromDependencyWith<D, C>
+where
+    D: ?Sized,
+    C: Copy,
+{
+}
 
 impl<D, C> PartialEq for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: PartialEq + ?Sized,
 {
     fn eq(&self, other: &Self) -> bool {
@@ -170,10 +215,16 @@ where
     }
 }
 
-impl<D, C> Eq for FromDependencyWith<D, C> where C: Eq + ?Sized {}
+impl<D, C> Eq for FromDependencyWith<D, C>
+where
+    D: ?Sized,
+    C: Eq + ?Sized,
+{
+}
 
 impl<D, C> PartialOrd for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: PartialOrd + ?Sized,
 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
@@ -185,6 +236,7 @@ where
 
 impl<D, C> Ord for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: Ord + ?Sized,
 {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
@@ -196,6 +248,7 @@ where
 
 impl<D, C> Hash for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: Hash + ?Sized,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
@@ -206,6 +259,7 @@ where
 
 impl<D, C> Deref for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     type Target = C;
@@ -218,6 +272,7 @@ where
 
 impl<D, C> DerefMut for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
@@ -228,6 +283,7 @@ where
 
 impl<D, C, T> AsRef<T> for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsRef<T>,
@@ -239,6 +295,7 @@ where
 
 impl<D, C, T> AsMut<T> for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsMut<T>,
@@ -250,6 +307,7 @@ where
 
 impl<D, C> Borrow<C> for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow(&self) -> &C {
@@ -259,6 +317,7 @@ where
 
 impl<D, C> BorrowMut<C> for FromDependencyWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow_mut(&mut self) -> &mut C {
