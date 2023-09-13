@@ -5,29 +5,34 @@ use core::{
 
 use crate::with::With;
 
-/// Context which allows to provide dependency by *cloning*
-/// if type of dependency implements [`Clone`]
-/// and provider implements [`Provide`](crate::Provide)`<_>`.
+/// Context which allows to provide dependency by *cloning* a *value*.
+///
+/// This is possible if:
+/// - type of dependency `T` implements [`Clone`],
+/// - provider implements [`Provide`](crate::Provide)`<T>`.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneOwned;
+pub struct CloneDependency;
 
-impl<T> With<T> for CloneOwned {
-    type Output = CloneOwnedWith<T>;
+impl<T> With<T> for CloneDependency {
+    type Output = CloneDependencyWith<T>;
 
     fn with(self, dependency: T) -> Self::Output {
         dependency.into()
     }
 }
 
-/// Context which allows to provide dependency by *cloning*
-/// if type of dependency implements [`Clone`]
-/// and provider implements [`ProvideWith`](crate::with::ProvideWith)`<_, C>`.
+/// Context which allows to provide dependency by *cloning* a *value*
+/// which could be provided with additional context.
+///
+/// This is possible if:
+/// - type of dependency `T` implements [`Clone`],
+/// - provider implements [`ProvideWith`](crate::with::ProvideWith)`<T, C>`.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneOwnedWith<C>(pub C)
+pub struct CloneDependencyWith<C>(pub C)
 where
     C: ?Sized;
 
-impl<C> CloneOwnedWith<C> {
+impl<C> CloneDependencyWith<C> {
     /// Creates self from provided context.
     pub const fn new(context: C) -> Self {
         Self(context)
@@ -40,13 +45,13 @@ impl<C> CloneOwnedWith<C> {
     }
 }
 
-impl<C> From<C> for CloneOwnedWith<C> {
+impl<C> From<C> for CloneDependencyWith<C> {
     fn from(context: C) -> Self {
         Self::new(context)
     }
 }
 
-impl<C> Deref for CloneOwnedWith<C>
+impl<C> Deref for CloneDependencyWith<C>
 where
     C: ?Sized,
 {
@@ -58,7 +63,7 @@ where
     }
 }
 
-impl<C> DerefMut for CloneOwnedWith<C>
+impl<C> DerefMut for CloneDependencyWith<C>
 where
     C: ?Sized,
 {
@@ -68,7 +73,7 @@ where
     }
 }
 
-impl<C, T> AsRef<T> for CloneOwnedWith<C>
+impl<C, T> AsRef<T> for CloneDependencyWith<C>
 where
     C: ?Sized,
     T: ?Sized,
@@ -79,7 +84,7 @@ where
     }
 }
 
-impl<C, T> AsMut<T> for CloneOwnedWith<C>
+impl<C, T> AsMut<T> for CloneDependencyWith<C>
 where
     C: ?Sized,
     T: ?Sized,
@@ -90,7 +95,7 @@ where
     }
 }
 
-impl<C> Borrow<C> for CloneOwnedWith<C>
+impl<C> Borrow<C> for CloneDependencyWith<C>
 where
     C: ?Sized,
 {
@@ -99,7 +104,7 @@ where
     }
 }
 
-impl<C> BorrowMut<C> for CloneOwnedWith<C>
+impl<C> BorrowMut<C> for CloneDependencyWith<C>
 where
     C: ?Sized,
 {

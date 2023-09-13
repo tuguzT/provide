@@ -1,4 +1,4 @@
-//! Context closely related to [type conversions](core::convert).
+//! Context closely related to dependency [type conversions](core::convert).
 
 use core::{
     borrow::{Borrow, BorrowMut},
@@ -8,10 +8,15 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
-use crate::With;
+use crate::with::With;
 
-/// Context which allows to provide some dependency
-/// by creating it from another dependency.
+/// Context which allows to provide dependency by *creating it from* another dependency by *value*.
+///
+/// This is possible if:
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`Provide`](crate::Provide)`<D>`,
+///
+/// where `T` is the type of dependency to provide.
 pub struct FromDependency<D>(PhantomData<fn() -> D>);
 
 impl<D> FromDependency<D> {
@@ -83,9 +88,14 @@ impl<D, C> With<C> for FromDependency<D> {
     }
 }
 
-/// Context which allows to provide some dependency
-/// by creating it from another dependency
-/// which can be provided with additional context.
+/// Context which allows to provide dependency by *creating it from* another dependency by *value*
+/// which could be provided with additional context.
+///
+/// This is possible if:
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`ProvideWith`](crate::with::ProvideWith)`<D, C>`,
+///
+/// where `T` is the type of dependency to provide.
 pub struct FromDependencyWith<D, C>
 where
     C: ?Sized,

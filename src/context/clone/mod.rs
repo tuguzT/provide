@@ -1,9 +1,9 @@
-//! Context closely related to dependency [cloning](Clone).
+//! Context closely related to dependency [cloning](core::clone).
 
 pub use self::{
-    owned::{CloneOwned, CloneOwnedWith},
-    r#mut::{CloneMut, CloneMutWith},
-    r#ref::{CloneRef, CloneRefWith},
+    owned::{CloneDependency, CloneDependencyWith},
+    r#mut::{CloneDependencyMut, CloneDependencyMutWith},
+    r#ref::{CloneDependencyRef, CloneDependencyRefWith},
 };
 
 mod r#mut;

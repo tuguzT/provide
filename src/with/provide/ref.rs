@@ -36,7 +36,7 @@ where
 mod impls {
     use crate::{
         context::{
-            clone::{CloneRef, CloneRefWith},
+            clone::{CloneDependencyRef, CloneDependencyRefWith},
             Empty,
         },
         deref::DerefWrapper,
@@ -63,7 +63,7 @@ mod impls {
         }
     }
 
-    impl<T, U> ProvideRefWith<T, CloneRef> for U
+    impl<T, U> ProvideRefWith<T, CloneDependencyRef> for U
     where
         T: Clone,
         U: ProvideRef<T> + ?Sized,
@@ -73,7 +73,7 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_ref_with<'me>(&'me self, _: CloneRef) -> Self::Ref<'me>
+        fn provide_ref_with<'me>(&'me self, _: CloneDependencyRef) -> Self::Ref<'me>
         where
             T: 'me,
         {
@@ -82,7 +82,7 @@ mod impls {
         }
     }
 
-    impl<T, U, C> ProvideRefWith<T, CloneRefWith<C>> for U
+    impl<T, U, C> ProvideRefWith<T, CloneDependencyRefWith<C>> for U
     where
         T: Clone,
         U: ProvideRefWith<T, C> + ?Sized,
@@ -92,7 +92,7 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_ref_with<'me>(&'me self, context: CloneRefWith<C>) -> Self::Ref<'me>
+        fn provide_ref_with<'me>(&'me self, context: CloneDependencyRefWith<C>) -> Self::Ref<'me>
         where
             T: 'me,
         {

@@ -36,7 +36,10 @@ where
 mod impls {
     use crate::{
         context::{
-            clone::{CloneMut, CloneMutWith, CloneRef, CloneRefWith},
+            clone::{
+                CloneDependencyMut, CloneDependencyMutWith, CloneDependencyRef,
+                CloneDependencyRefWith,
+            },
             Empty,
         },
         deref::DerefWrapper,
@@ -64,7 +67,7 @@ mod impls {
         }
     }
 
-    impl<T, U> ProvideMutWith<T, CloneRef> for U
+    impl<T, U> ProvideMutWith<T, CloneDependencyRef> for U
     where
         T: Clone,
         U: ProvideRef<T> + ?Sized,
@@ -74,7 +77,7 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_mut_with<'me>(&'me mut self, _: CloneRef) -> Self::Mut<'me>
+        fn provide_mut_with<'me>(&'me mut self, _: CloneDependencyRef) -> Self::Mut<'me>
         where
             T: 'me,
         {
@@ -83,7 +86,7 @@ mod impls {
         }
     }
 
-    impl<T, U, C> ProvideMutWith<T, CloneRefWith<C>> for U
+    impl<T, U, C> ProvideMutWith<T, CloneDependencyRefWith<C>> for U
     where
         T: Clone,
         U: ProvideRefWith<T, C> + ?Sized,
@@ -93,7 +96,10 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_mut_with<'me>(&'me mut self, context: CloneRefWith<C>) -> Self::Mut<'me>
+        fn provide_mut_with<'me>(
+            &'me mut self,
+            context: CloneDependencyRefWith<C>,
+        ) -> Self::Mut<'me>
         where
             T: 'me,
         {
@@ -103,7 +109,7 @@ mod impls {
         }
     }
 
-    impl<T, U> ProvideMutWith<T, CloneMut> for U
+    impl<T, U> ProvideMutWith<T, CloneDependencyMut> for U
     where
         T: Clone,
         U: ProvideMut<T> + ?Sized,
@@ -113,7 +119,7 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_mut_with<'me>(&'me mut self, _: CloneMut) -> Self::Mut<'me>
+        fn provide_mut_with<'me>(&'me mut self, _: CloneDependencyMut) -> Self::Mut<'me>
         where
             T: 'me,
         {
@@ -122,7 +128,7 @@ mod impls {
         }
     }
 
-    impl<T, U, C> ProvideMutWith<T, CloneMutWith<C>> for U
+    impl<T, U, C> ProvideMutWith<T, CloneDependencyMutWith<C>> for U
     where
         T: Clone,
         U: ProvideMutWith<T, C> + ?Sized,
@@ -132,7 +138,10 @@ mod impls {
             Self: 'me,
             T: 'me;
 
-        fn provide_mut_with<'me>(&'me mut self, context: CloneMutWith<C>) -> Self::Mut<'me>
+        fn provide_mut_with<'me>(
+            &'me mut self,
+            context: CloneDependencyMutWith<C>,
+        ) -> Self::Mut<'me>
         where
             T: 'me,
         {

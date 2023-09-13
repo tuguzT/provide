@@ -5,29 +5,34 @@ use core::{
 
 use crate::with::With;
 
-/// Context which allows to provide dependency by *cloning*
-/// if type of dependency implements [`Clone`]
-/// and provider implements [`ProvideMut`](crate::ProvideMut)`<_>`.
+/// Context which allows to provide dependency by *cloning* from *unique reference*.
+///
+/// This is possible if:
+/// - type of dependency `T` implements [`Clone`],
+/// - provider implements [`ProvideMut`](crate::ProvideMut)`<T>`.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneMut;
+pub struct CloneDependencyMut;
 
-impl<T> With<T> for CloneMut {
-    type Output = CloneMutWith<T>;
+impl<T> With<T> for CloneDependencyMut {
+    type Output = CloneDependencyMutWith<T>;
 
     fn with(self, dependency: T) -> Self::Output {
         dependency.into()
     }
 }
 
-/// Context which allows to provide dependency by *cloning*
-/// if type of dependency implements [`Clone`]
-/// and provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<_, C>`.
+/// Context which allows to provide dependency by *cloning* from *unique reference*
+/// which could be provided with additional context.
+///
+/// This is possible if:
+/// - type of dependency `T` implements [`Clone`],
+/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<T, C>`.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneMutWith<C>(pub C)
+pub struct CloneDependencyMutWith<C>(pub C)
 where
     C: ?Sized;
 
-impl<C> CloneMutWith<C> {
+impl<C> CloneDependencyMutWith<C> {
     /// Creates self from provided context.
     pub const fn new(context: C) -> Self {
         Self(context)
@@ -40,13 +45,13 @@ impl<C> CloneMutWith<C> {
     }
 }
 
-impl<C> From<C> for CloneMutWith<C> {
+impl<C> From<C> for CloneDependencyMutWith<C> {
     fn from(context: C) -> Self {
         Self::new(context)
     }
 }
 
-impl<C> Deref for CloneMutWith<C>
+impl<C> Deref for CloneDependencyMutWith<C>
 where
     C: ?Sized,
 {
@@ -58,7 +63,7 @@ where
     }
 }
 
-impl<C> DerefMut for CloneMutWith<C>
+impl<C> DerefMut for CloneDependencyMutWith<C>
 where
     C: ?Sized,
 {
@@ -68,7 +73,7 @@ where
     }
 }
 
-impl<C, T> AsRef<T> for CloneMutWith<C>
+impl<C, T> AsRef<T> for CloneDependencyMutWith<C>
 where
     C: ?Sized,
     T: ?Sized,
@@ -79,7 +84,7 @@ where
     }
 }
 
-impl<C, T> AsMut<T> for CloneMutWith<C>
+impl<C, T> AsMut<T> for CloneDependencyMutWith<C>
 where
     C: ?Sized,
     T: ?Sized,
@@ -90,7 +95,7 @@ where
     }
 }
 
-impl<C> Borrow<C> for CloneMutWith<C>
+impl<C> Borrow<C> for CloneDependencyMutWith<C>
 where
     C: ?Sized,
 {
@@ -99,7 +104,7 @@ where
     }
 }
 
-impl<C> BorrowMut<C> for CloneMutWith<C>
+impl<C> BorrowMut<C> for CloneDependencyMutWith<C>
 where
     C: ?Sized,
 {
