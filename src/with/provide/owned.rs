@@ -31,7 +31,9 @@ mod impls {
                 CloneDependency, CloneDependencyMut, CloneDependencyMutWith, CloneDependencyRef,
                 CloneDependencyRefWith, CloneDependencyWith,
             },
-            convert::{FromDependency, FromDependencyWith},
+            convert::{
+                FromDependency, FromDependencyRef, FromDependencyRefWith, FromDependencyWith,
+            },
             Empty,
         },
         with::{ProvideMutWith, ProvideRefWith, With},
@@ -53,8 +55,8 @@ mod impls {
 
     impl<T, U, D> ProvideWith<T, FromDependency<D>> for U
     where
-        D: Into<T>,
         U: Provide<D>,
+        D: Into<T>,
     {
         type Remainder = U::Remainder;
 
@@ -67,8 +69,8 @@ mod impls {
 
     impl<T, U, D, C> ProvideWith<T, FromDependencyWith<D, C>> for U
     where
-        D: Into<T>,
         U: ProvideWith<D, C>,
+        D: Into<T>,
     {
         type Remainder = U::Remainder;
 
@@ -77,6 +79,37 @@ mod impls {
             let (dependency, remainder) = self.provide_with(context);
             let dependency = dependency.into();
             (dependency, remainder)
+        }
+    }
+
+    impl<T, U, D> ProvideWith<T, FromDependencyRef<D>> for U
+    where
+        U: ProvideRef<D>,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Remainder = U;
+
+        fn provide_with(self, _: FromDependencyRef<D>) -> (T, Self::Remainder) {
+            let dependency = self.provide_ref();
+            let dependency = dependency.into();
+            (dependency, self)
+        }
+    }
+
+    impl<T, U, D, C> ProvideWith<T, FromDependencyRefWith<D, C>> for U
+    where
+        U: ProvideRefWith<D, C>,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Remainder = U;
+
+        fn provide_with(self, context: FromDependencyRefWith<D, C>) -> (T, Self::Remainder) {
+            let context = context.into_inner();
+            let dependency = self.provide_ref_with(context);
+            let dependency = dependency.into();
+            (dependency, self)
         }
     }
 

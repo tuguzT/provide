@@ -40,6 +40,7 @@ mod impls {
                 CloneDependencyMut, CloneDependencyMutWith, CloneDependencyRef,
                 CloneDependencyRefWith,
             },
+            convert::{FromDependencyRef, FromDependencyRefWith},
             Empty,
         },
         deref::DerefWrapper,
@@ -64,6 +65,52 @@ mod impls {
             T: 'me,
         {
             self.provide_mut()
+        }
+    }
+
+    impl<T, U, D> ProvideMutWith<T, FromDependencyRef<D>> for U
+    where
+        U: ProvideRef<D> + ?Sized,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Mut<'me> = DerefWrapper<T>
+        where
+            Self: 'me,
+            T: 'me;
+
+        fn provide_mut_with<'me>(&'me mut self, _: FromDependencyRef<D>) -> Self::Mut<'me>
+        where
+            T: 'me,
+        {
+            let dependency = self.provide_ref();
+            let dependency = dependency.into();
+            DerefWrapper::new(dependency)
+        }
+    }
+
+    impl<T, U, D, C> ProvideMutWith<T, FromDependencyRefWith<D, C>> for U
+    where
+        U: ProvideRefWith<D, C> + ?Sized,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Mut<'me> = DerefWrapper<T>
+        where
+            Self: 'me,
+            T: 'me;
+
+        fn provide_mut_with<'me>(
+            &'me mut self,
+            context: FromDependencyRefWith<D, C>,
+        ) -> Self::Mut<'me>
+        where
+            T: 'me,
+        {
+            let context = context.into_inner();
+            let dependency = (*self).provide_ref_with(context);
+            let dependency = dependency.into();
+            DerefWrapper::new(dependency)
         }
     }
 

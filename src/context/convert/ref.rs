@@ -9,44 +9,61 @@ use core::{
 use crate::with::With;
 
 /// Context which allows to provide dependency by *creating it from*
-/// another dependency by *value*.
+/// another dependency by *shared reference*.
 ///
 /// This is possible if:
 /// - type of another dependency `D` implements [`Into`]`<T>`,
-/// - provider implements [`Provide`](crate::Provide)`<D>`,
+/// - provider implements [`ProvideRef`](crate::ProvideRef)`<D>`,
 ///
 /// where `T` is the type of dependency to provide.
-pub struct FromDependency<D>(PhantomData<fn() -> D>);
+pub struct FromDependencyRef<D>(PhantomData<fn() -> D>)
+where
+    D: ?Sized;
 
-impl<D> FromDependency<D> {
+impl<D> FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     /// Creates new from dependency context.
     pub const fn new() -> Self {
         Self(PhantomData)
     }
 }
 
-impl<D> Debug for FromDependency<D> {
+impl<D> Debug for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let type_name = core::any::type_name::<D>();
-        write!(f, "FromDependency<{type_name}>")
+        write!(f, "FromDependencyRef<{type_name}>")
     }
 }
 
-impl<D> Default for FromDependency<D> {
+impl<D> Default for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<D> Clone for FromDependency<D> {
+impl<D> Clone for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<D> Copy for FromDependency<D> {}
+impl<D> Copy for FromDependencyRef<D> where D: ?Sized {}
 
-impl<D> PartialEq for FromDependency<D> {
+impl<D> PartialEq for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn eq(&self, other: &Self) -> bool {
         let Self(this) = self;
         let Self(other) = other;
@@ -54,9 +71,12 @@ impl<D> PartialEq for FromDependency<D> {
     }
 }
 
-impl<D> Eq for FromDependency<D> {}
+impl<D> Eq for FromDependencyRef<D> where D: ?Sized {}
 
-impl<D> PartialOrd for FromDependency<D> {
+impl<D> PartialOrd for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         let Self(this) = self;
         let Self(other) = other;
@@ -64,7 +84,10 @@ impl<D> PartialOrd for FromDependency<D> {
     }
 }
 
-impl<D> Ord for FromDependency<D> {
+impl<D> Ord for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         let Self(this) = self;
         let Self(other) = other;
@@ -72,15 +95,21 @@ impl<D> Ord for FromDependency<D> {
     }
 }
 
-impl<D> Hash for FromDependency<D> {
+impl<D> Hash for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         let Self(this) = self;
         this.hash(state)
     }
 }
 
-impl<D, C> With<C> for FromDependency<D> {
-    type Output = FromDependencyWith<D, C>;
+impl<D, C> With<C> for FromDependencyRef<D>
+where
+    D: ?Sized,
+{
+    type Output = FromDependencyRefWith<D, C>;
 
     fn with(self, dependency: C) -> Self::Output {
         dependency.into()
@@ -88,16 +117,17 @@ impl<D, C> With<C> for FromDependency<D> {
 }
 
 /// Context which allows to provide dependency by *creating it from*
-/// another dependency by *value*
+/// another dependency by *shared reference*
 /// which could be provided with additional context.
 ///
 /// This is possible if:
 /// - type of another dependency `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideWith`](crate::with::ProvideWith)`<D, C>`,
+/// - provider implements [`ProvideRefWith`](crate::with::ProvideRefWith)`<D, C>`,
 ///
 /// where `T` is the type of dependency to provide.
-pub struct FromDependencyWith<D, C>
+pub struct FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     phantom: PhantomData<fn() -> D>,
@@ -105,7 +135,10 @@ where
     pub context: C,
 }
 
-impl<D, C> FromDependencyWith<D, C> {
+impl<D, C> FromDependencyRefWith<D, C>
+where
+    D: ?Sized,
+{
     /// Creates self from provided context.
     pub const fn new(context: C) -> Self {
         let phantom = PhantomData;
@@ -119,25 +152,30 @@ impl<D, C> FromDependencyWith<D, C> {
     }
 }
 
-impl<D, C> From<C> for FromDependencyWith<D, C> {
+impl<D, C> From<C> for FromDependencyRefWith<D, C>
+where
+    D: ?Sized,
+{
     fn from(context: C) -> Self {
         Self::new(context)
     }
 }
 
-impl<D, C> Debug for FromDependencyWith<D, C>
+impl<D, C> Debug for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: Debug + ?Sized,
 {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let Self { context, .. } = self;
         let type_name = core::any::type_name::<D>();
-        write!(f, "FromDependencyWith<{type_name}>({context:?})")
+        write!(f, "FromDependencyRefWith<{type_name}>({context:?})")
     }
 }
 
-impl<D, C> Default for FromDependencyWith<D, C>
+impl<D, C> Default for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: Default,
 {
     fn default() -> Self {
@@ -146,8 +184,9 @@ where
     }
 }
 
-impl<D, C> Clone for FromDependencyWith<D, C>
+impl<D, C> Clone for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: Clone,
 {
     fn clone(&self) -> Self {
@@ -157,10 +196,16 @@ where
     }
 }
 
-impl<D, C> Copy for FromDependencyWith<D, C> where C: Copy {}
-
-impl<D, C> PartialEq for FromDependencyWith<D, C>
+impl<D, C> Copy for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
+    C: Copy,
+{
+}
+
+impl<D, C> PartialEq for FromDependencyRefWith<D, C>
+where
+    D: ?Sized,
     C: PartialEq + ?Sized,
 {
     fn eq(&self, other: &Self) -> bool {
@@ -170,10 +215,16 @@ where
     }
 }
 
-impl<D, C> Eq for FromDependencyWith<D, C> where C: Eq + ?Sized {}
-
-impl<D, C> PartialOrd for FromDependencyWith<D, C>
+impl<D, C> Eq for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
+    C: Eq + ?Sized,
+{
+}
+
+impl<D, C> PartialOrd for FromDependencyRefWith<D, C>
+where
+    D: ?Sized,
     C: PartialOrd + ?Sized,
 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
@@ -183,8 +234,9 @@ where
     }
 }
 
-impl<D, C> Ord for FromDependencyWith<D, C>
+impl<D, C> Ord for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: Ord + ?Sized,
 {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
@@ -194,8 +246,9 @@ where
     }
 }
 
-impl<D, C> Hash for FromDependencyWith<D, C>
+impl<D, C> Hash for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: Hash + ?Sized,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
@@ -204,8 +257,9 @@ where
     }
 }
 
-impl<D, C> Deref for FromDependencyWith<D, C>
+impl<D, C> Deref for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     type Target = C;
@@ -216,8 +270,9 @@ where
     }
 }
 
-impl<D, C> DerefMut for FromDependencyWith<D, C>
+impl<D, C> DerefMut for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
@@ -226,8 +281,9 @@ where
     }
 }
 
-impl<D, C, T> AsRef<T> for FromDependencyWith<D, C>
+impl<D, C, T> AsRef<T> for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsRef<T>,
@@ -237,8 +293,9 @@ where
     }
 }
 
-impl<D, C, T> AsMut<T> for FromDependencyWith<D, C>
+impl<D, C, T> AsMut<T> for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsMut<T>,
@@ -248,8 +305,9 @@ where
     }
 }
 
-impl<D, C> Borrow<C> for FromDependencyWith<D, C>
+impl<D, C> Borrow<C> for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow(&self) -> &C {
@@ -257,8 +315,9 @@ where
     }
 }
 
-impl<D, C> BorrowMut<C> for FromDependencyWith<D, C>
+impl<D, C> BorrowMut<C> for FromDependencyRefWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow_mut(&mut self) -> &mut C {

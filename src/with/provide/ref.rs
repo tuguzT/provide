@@ -37,6 +37,7 @@ mod impls {
     use crate::{
         context::{
             clone::{CloneDependencyRef, CloneDependencyRefWith},
+            convert::{FromDependencyRef, FromDependencyRefWith},
             Empty,
         },
         deref::DerefWrapper,
@@ -60,6 +61,49 @@ mod impls {
             T: 'me,
         {
             self.provide_ref()
+        }
+    }
+
+    impl<T, U, D> ProvideRefWith<T, FromDependencyRef<D>> for U
+    where
+        U: ProvideRef<D> + ?Sized,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Ref<'me> = DerefWrapper<T>
+        where
+            Self: 'me,
+            T: 'me;
+
+        fn provide_ref_with<'me>(&'me self, _: FromDependencyRef<D>) -> Self::Ref<'me>
+        where
+            T: 'me,
+        {
+            let dependency = self.provide_ref();
+            let dependency = dependency.into();
+            DerefWrapper::new(dependency)
+        }
+    }
+
+    impl<T, U, D, C> ProvideRefWith<T, FromDependencyRefWith<D, C>> for U
+    where
+        U: ProvideRefWith<D, C> + ?Sized,
+        for<'any> U::Ref<'any>: Into<T>,
+        D: ?Sized,
+    {
+        type Ref<'me> = DerefWrapper<T>
+        where
+            Self: 'me,
+            T: 'me;
+
+        fn provide_ref_with<'me>(&'me self, context: FromDependencyRefWith<D, C>) -> Self::Ref<'me>
+        where
+            T: 'me,
+        {
+            let context = context.into_inner();
+            let dependency = (*self).provide_ref_with(context);
+            let dependency = dependency.into();
+            DerefWrapper::new(dependency)
         }
     }
 
