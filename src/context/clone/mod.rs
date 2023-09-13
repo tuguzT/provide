@@ -1,4 +1,4 @@
-//! Context closely related to dependency cloning.
+//! Context closely related to dependency [cloning](Clone).
 
 pub use self::{
     owned::{CloneOwned, CloneOwnedWith},

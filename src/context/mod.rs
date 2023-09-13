@@ -3,6 +3,7 @@
 //! See [crate] documentation for more.
 
 pub mod clone;
+pub mod convert;
 
 /// Context which represents no meaningful context.
 pub type Empty = ();

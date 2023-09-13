@@ -27,6 +27,7 @@ mod impls {
     use crate::{
         context::{
             clone::{CloneMut, CloneMutWith, CloneOwned, CloneOwnedWith, CloneRef, CloneRefWith},
+            convert::{FromDependency, FromDependencyWith},
             Empty,
         },
         with::{ProvideMutWith, ProvideRefWith, With},
@@ -43,6 +44,35 @@ mod impls {
 
         fn provide_with(self, _: Empty) -> (T, Self::Remainder) {
             self.provide()
+        }
+    }
+
+    impl<T, U, D> ProvideWith<T, FromDependency<D>> for U
+    where
+        D: Into<T>,
+        U: Provide<D>,
+    {
+        type Remainder = U::Remainder;
+
+        fn provide_with(self, _: FromDependency<D>) -> (T, Self::Remainder) {
+            let (dependency, remainder) = self.provide();
+            let dependency = dependency.into();
+            (dependency, remainder)
+        }
+    }
+
+    impl<T, U, D, C> ProvideWith<T, FromDependencyWith<D, C>> for U
+    where
+        D: Into<T>,
+        U: ProvideWith<D, C>,
+    {
+        type Remainder = U::Remainder;
+
+        fn provide_with(self, context: FromDependencyWith<D, C>) -> (T, Self::Remainder) {
+            let context = context.into_inner();
+            let (dependency, remainder) = self.provide_with(context);
+            let dependency = dependency.into();
+            (dependency, remainder)
         }
     }
 

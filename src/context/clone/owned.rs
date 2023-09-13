@@ -90,20 +90,20 @@ where
     }
 }
 
-impl<T> Borrow<T> for CloneOwnedWith<T>
+impl<C> Borrow<C> for CloneOwnedWith<C>
 where
-    T: ?Sized,
+    C: ?Sized,
 {
-    fn borrow(&self) -> &T {
+    fn borrow(&self) -> &C {
         self.deref()
     }
 }
 
-impl<T> BorrowMut<T> for CloneOwnedWith<T>
+impl<C> BorrowMut<C> for CloneOwnedWith<C>
 where
-    T: ?Sized,
+    C: ?Sized,
 {
-    fn borrow_mut(&mut self) -> &mut T {
+    fn borrow_mut(&mut self) -> &mut C {
         self.deref_mut()
     }
 }
