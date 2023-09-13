@@ -13,11 +13,24 @@ use crate::with::With;
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CloneDependency;
 
+/// Attach additional context to the current context.
 impl<T> With<T> for CloneDependency {
     type Output = CloneDependencyWith<T>;
 
-    fn with(self, dependency: T) -> Self::Output {
-        dependency.into()
+    /// Attaches additional context to the current context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::{
+    ///     CloneDependency,
+    ///     CloneDependencyWith,
+    /// };
+    ///
+    /// todo!()
+    /// ```
+    fn with(self, context: T) -> Self::Output {
+        context.into()
     }
 }
 
@@ -34,11 +47,27 @@ where
 
 impl<C> CloneDependencyWith<C> {
     /// Creates self from provided context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::CloneDependencyWith;
+    ///
+    /// todo!()
+    /// ```
     pub const fn new(context: C) -> Self {
         Self(context)
     }
 
     /// Returns inner context, consuming self.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::CloneDependencyWith;
+    ///
+    /// todo!()
+    /// ```
     pub fn into_inner(self) -> C {
         let Self(context) = self;
         context

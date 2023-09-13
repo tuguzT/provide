@@ -13,11 +13,27 @@ where
 
 impl<T> DerefWrapper<T> {
     /// Creates self from provided value.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::deref::DerefWrapper;
+    ///
+    /// todo!()
+    /// ```
     pub const fn new(value: T) -> Self {
         Self(value)
     }
 
     /// Returns inner value, consuming self.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::deref::DerefWrapper;
+    ///
+    /// todo!()
+    /// ```
     pub fn into_inner(self) -> T {
         let Self(value) = self;
         value

@@ -25,6 +25,14 @@ where
     D: ?Sized,
 {
     /// Creates new from dependency context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::convert::FromDependencyRef;
+    ///
+    /// todo!()
+    /// ```
     pub const fn new() -> Self {
         Self(PhantomData)
     }
@@ -105,14 +113,27 @@ where
     }
 }
 
+/// Attach additional context to the current context.
 impl<D, C> With<C> for FromDependencyRef<D>
 where
     D: ?Sized,
 {
     type Output = FromDependencyRefWith<D, C>;
 
-    fn with(self, dependency: C) -> Self::Output {
-        dependency.into()
+    /// Attaches additional context to the current context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::convert::{
+    ///     FromDependencyRef,
+    ///     FromDependencyRefWith,
+    /// };
+    ///
+    /// todo!()
+    /// ```
+    fn with(self, context: C) -> Self::Output {
+        context.into()
     }
 }
 
@@ -140,12 +161,28 @@ where
     D: ?Sized,
 {
     /// Creates self from provided context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::convert::FromDependencyRefWith;
+    ///
+    /// todo!()
+    /// ```
     pub const fn new(context: C) -> Self {
         let phantom = PhantomData;
         Self { phantom, context }
     }
 
     /// Returns inner context, consuming self.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::convert::FromDependencyRefWith;
+    ///
+    /// todo!()
+    /// ```
     pub fn into_inner(self) -> C {
         let Self { context, .. } = self;
         context

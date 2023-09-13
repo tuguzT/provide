@@ -4,8 +4,8 @@
 //! - **providers** are types which provide some dependency by value, shared or unique reference
 //! - **context** types represent different ways to provide some dependency
 //! - **injectors** are types which create requested values from contained dependencies
-
-// TODO crate documentation
+//!
+//! // TODO better documentation
 
 #![warn(clippy::all)]
 #![warn(missing_docs)]
