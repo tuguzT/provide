@@ -1,5 +1,3 @@
-//! Context closely related to dependency [type conversions](core::convert).
-
 use core::{
     borrow::{Borrow, BorrowMut},
     fmt::Debug,
