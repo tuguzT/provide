@@ -12,8 +12,8 @@ use crate::with::With;
 /// another dependency by *shared reference*.
 ///
 /// This is possible if:
-/// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideRef`](crate::ProvideRef)`<D>`,
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`ProvideRef`](crate::ProvideRef)`<'_, D>`,
 ///
 /// where `T` is the type of dependency to provide.
 pub struct FromDependencyRef<D>(PhantomData<fn() -> D>)
@@ -142,8 +142,8 @@ where
 /// which could be provided with additional context.
 ///
 /// This is possible if:
-/// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideRefWith`](crate::with::ProvideRefWith)`<D, C>`,
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`ProvideRefWith`](crate::with::ProvideRefWith)`<'_, D, C>`,
 ///
 /// where `T` is the type of dependency to provide.
 pub struct FromDependencyRefWith<D, C>

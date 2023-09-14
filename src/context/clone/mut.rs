@@ -1,5 +1,8 @@
 use core::{
     borrow::{Borrow, BorrowMut},
+    fmt::Debug,
+    hash::Hash,
+    marker::PhantomData,
     ops::{Deref, DerefMut},
 };
 
@@ -8,14 +11,112 @@ use crate::with::With;
 /// Context which allows to provide dependency by *cloning* from *unique reference*.
 ///
 /// This is possible if:
-/// - type of dependency `T` implements [`Clone`],
-/// - provider implements [`ProvideMut`](crate::ProvideMut)`<T>`.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneDependencyMut;
+/// - type of dependency to provide `T` implements [`Clone`],
+/// - type of unique reference `D` implements [`Deref`]`<`[`Target`](Deref::Target)` = T>`,
+/// - provider implements [`ProvideMut`](crate::ProvideMut)`<'_, D>`.
+pub struct CloneDependencyMut<D>(PhantomData<fn() -> D>)
+where
+    D: ?Sized;
+
+impl<D> CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    /// Creates new clone dependency context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::CloneDependencyMut;
+    ///
+    /// todo!()
+    /// ```
+    pub const fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+impl<D> Debug for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let type_name = core::any::type_name::<D>();
+        write!(f, "CloneDependencyMut<{type_name}>")
+    }
+}
+
+impl<D> Default for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<D> Clone for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<D> Copy for CloneDependencyMut<D> where D: ?Sized {}
+
+impl<D> PartialEq for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn eq(&self, other: &Self) -> bool {
+        let Self(this) = self;
+        let Self(other) = other;
+        this == other
+    }
+}
+
+impl<D> Eq for CloneDependencyMut<D> where D: ?Sized {}
+
+impl<D> PartialOrd for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        let Self(this) = self;
+        let Self(other) = other;
+        this.partial_cmp(other)
+    }
+}
+
+impl<D> Ord for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        let Self(this) = self;
+        let Self(other) = other;
+        this.cmp(other)
+    }
+}
+
+impl<D> Hash for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        let Self(this) = self;
+        this.hash(state)
+    }
+}
 
 /// Attach additional context to the current context.
-impl<T> With<T> for CloneDependencyMut {
-    type Output = CloneDependencyMutWith<T>;
+impl<D, C> With<C> for CloneDependencyMut<D>
+where
+    D: ?Sized,
+{
+    type Output = CloneDependencyMutWith<D, C>;
 
     /// Attaches additional context to the current context.
     ///
@@ -29,7 +130,7 @@ impl<T> With<T> for CloneDependencyMut {
     ///
     /// todo!()
     /// ```
-    fn with(self, context: T) -> Self::Output {
+    fn with(self, context: C) -> Self::Output {
         context.into()
     }
 }
@@ -38,14 +139,23 @@ impl<T> With<T> for CloneDependencyMut {
 /// which could be provided with additional context.
 ///
 /// This is possible if:
-/// - type of dependency `T` implements [`Clone`],
-/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<T, C>`.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneDependencyMutWith<C>(pub C)
+/// - type of dependency to provide `T` implements [`Clone`],
+/// - type of unique reference `D` implements [`Deref`]`<`[`Target`](Deref::Target)` = T>`,
+/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<'_, D, C>`.
+pub struct CloneDependencyMutWith<D, C>
 where
-    C: ?Sized;
+    D: ?Sized,
+    C: ?Sized,
+{
+    phantom: PhantomData<fn() -> D>,
+    /// Inner context of the current context.
+    pub context: C,
+}
 
-impl<C> CloneDependencyMutWith<C> {
+impl<D, C> CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+{
     /// Creates self from provided context.
     ///
     /// # Examples
@@ -56,7 +166,8 @@ impl<C> CloneDependencyMutWith<C> {
     /// todo!()
     /// ```
     pub const fn new(context: C) -> Self {
-        Self(context)
+        let phantom = PhantomData;
+        Self { phantom, context }
     }
 
     /// Returns inner context, consuming self.
@@ -69,41 +180,143 @@ impl<C> CloneDependencyMutWith<C> {
     /// todo!()
     /// ```
     pub fn into_inner(self) -> C {
-        let Self(context) = self;
+        let Self { context, .. } = self;
         context
     }
 }
 
-impl<C> From<C> for CloneDependencyMutWith<C> {
+impl<D, C> From<C> for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+{
     fn from(context: C) -> Self {
         Self::new(context)
     }
 }
 
-impl<C> Deref for CloneDependencyMutWith<C>
+impl<D, C> Debug for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
+    C: Debug + ?Sized,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let Self { context, .. } = self;
+        let type_name = core::any::type_name::<D>();
+        write!(f, "CloneDependencyMutWith<{type_name}>({context:?})")
+    }
+}
+
+impl<D, C> Default for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Default,
+{
+    fn default() -> Self {
+        let context = Default::default();
+        Self::new(context)
+    }
+}
+
+impl<D, C> Clone for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Clone,
+{
+    fn clone(&self) -> Self {
+        let Self { context, .. } = self;
+        let context = context.clone();
+        Self::new(context)
+    }
+}
+
+impl<D, C> Copy for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Copy,
+{
+}
+
+impl<D, C> PartialEq for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: PartialEq + ?Sized,
+{
+    fn eq(&self, other: &Self) -> bool {
+        let Self { context: this, .. } = self;
+        let Self { context: other, .. } = other;
+        this == other
+    }
+}
+
+impl<D, C> Eq for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Eq + ?Sized,
+{
+}
+
+impl<D, C> PartialOrd for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: PartialOrd + ?Sized,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        let Self { context: this, .. } = self;
+        let Self { context: other, .. } = other;
+        this.partial_cmp(other)
+    }
+}
+
+impl<D, C> Ord for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Ord + ?Sized,
+{
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        let Self { context: this, .. } = self;
+        let Self { context: other, .. } = other;
+        this.cmp(other)
+    }
+}
+
+impl<D, C> Hash for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: Hash + ?Sized,
+{
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        let Self { context, .. } = self;
+        context.hash(state)
+    }
+}
+
+impl<D, C> Deref for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
     C: ?Sized,
 {
     type Target = C;
 
     fn deref(&self) -> &Self::Target {
-        let Self(context) = self;
+        let Self { context, .. } = self;
         context
     }
 }
 
-impl<C> DerefMut for CloneDependencyMutWith<C>
+impl<D, C> DerefMut for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        let Self(context) = self;
+        let Self { context, .. } = self;
         context
     }
 }
 
-impl<C, T> AsRef<T> for CloneDependencyMutWith<C>
+impl<D, C, T> AsRef<T> for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsRef<T>,
@@ -113,8 +326,9 @@ where
     }
 }
 
-impl<C, T> AsMut<T> for CloneDependencyMutWith<C>
+impl<D, C, T> AsMut<T> for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
     T: ?Sized,
     <Self as Deref>::Target: AsMut<T>,
@@ -124,8 +338,9 @@ where
     }
 }
 
-impl<C> Borrow<C> for CloneDependencyMutWith<C>
+impl<D, C> Borrow<C> for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow(&self) -> &C {
@@ -133,8 +348,9 @@ where
     }
 }
 
-impl<C> BorrowMut<C> for CloneDependencyMutWith<C>
+impl<D, C> BorrowMut<C> for CloneDependencyMutWith<D, C>
 where
+    D: ?Sized,
     C: ?Sized,
 {
     fn borrow_mut(&mut self) -> &mut C {

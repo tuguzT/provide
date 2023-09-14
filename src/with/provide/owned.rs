@@ -25,6 +25,8 @@ pub trait ProvideWith<T, C> {
 }
 
 mod impls {
+    use core::ops::Deref;
+
     use crate::{
         context::{
             clone::{
@@ -85,7 +87,7 @@ mod impls {
 
     impl<T, U, D> ProvideWith<T, FromDependencyRef<D>> for U
     where
-        for<'any> U: ProvideRef<'any, D>,
+        U: for<'any> ProvideRef<'any, D>,
         D: Into<T>,
     {
         type Remainder = U;
@@ -99,7 +101,7 @@ mod impls {
 
     impl<T, U, D, C> ProvideWith<T, FromDependencyRefWith<D, C>> for U
     where
-        for<'any> U: ProvideRefWith<'any, D, C>,
+        U: for<'any> ProvideRefWith<'any, D, C>,
         D: Into<T>,
     {
         type Remainder = U;
@@ -114,7 +116,7 @@ mod impls {
 
     impl<T, U, D> ProvideWith<T, FromDependencyMut<D>> for U
     where
-        for<'any> U: ProvideMut<'any, D>,
+        U: for<'any> ProvideMut<'any, D>,
         D: Into<T>,
     {
         type Remainder = U;
@@ -128,7 +130,7 @@ mod impls {
 
     impl<T, U, D, C> ProvideWith<T, FromDependencyMutWith<D, C>> for U
     where
-        for<'any> U: ProvideMutWith<'any, D, C>,
+        U: for<'any> ProvideMutWith<'any, D, C>,
         D: Into<T>,
     {
         type Remainder = U;
@@ -172,66 +174,58 @@ mod impls {
         }
     }
 
-    // TODO clone from reference provided by `Deref` trait
-    //      add generic parameter `D` which implements `Deref<Target = T>`
-    //      then add it to the `CloneDependencyRef` struct (to be `CloneDependencyRef<D>`)
-    impl<T, U> ProvideWith<T, CloneDependencyRef> for U
+    impl<T, U, D> ProvideWith<T, CloneDependencyRef<D>> for U
     where
         T: Clone,
-        for<'any> U: ProvideRef<'any, &'any T>,
+        U: for<'any> ProvideRef<'any, D>,
+        D: Deref<Target = T>,
     {
         type Remainder = U;
 
-        fn provide_with(self, _: CloneDependencyRef) -> (T, Self::Remainder) {
+        fn provide_with(self, _: CloneDependencyRef<D>) -> (T, Self::Remainder) {
             let dependency = self.provide_ref().clone();
             (dependency, self)
         }
     }
 
-    // TODO clone from reference provided by `Deref` trait
-    //      add generic parameter `D` which implements `Deref<Target = T>`
-    //      then add it to the `CloneDependencyRefWith` struct (to be `CloneDependencyRefWith<D, C>`)
-    impl<T, U, C> ProvideWith<T, CloneDependencyRefWith<C>> for U
+    impl<T, U, D, C> ProvideWith<T, CloneDependencyRefWith<D, C>> for U
     where
         T: Clone,
-        for<'any> U: ProvideRefWith<'any, &'any T, C>,
+        U: for<'any> ProvideRefWith<'any, D, C>,
+        D: Deref<Target = T>,
     {
         type Remainder = U;
 
-        fn provide_with(self, context: CloneDependencyRefWith<C>) -> (T, Self::Remainder) {
+        fn provide_with(self, context: CloneDependencyRefWith<D, C>) -> (T, Self::Remainder) {
             let context = context.into_inner();
             let dependency = self.provide_ref_with(context).clone();
             (dependency, self)
         }
     }
 
-    // TODO clone from reference provided by `Deref` trait
-    //      add generic parameter `D` which implements `Deref<Target = T>`
-    //      then add it to the `CloneDependencyMut` struct (to be `CloneDependencyMut<D>`)
-    impl<T, U> ProvideWith<T, CloneDependencyMut> for U
+    impl<T, U, D> ProvideWith<T, CloneDependencyMut<D>> for U
     where
         T: Clone,
-        for<'any> U: ProvideMut<'any, &'any T>,
+        U: for<'any> ProvideMut<'any, D>,
+        D: Deref<Target = T>,
     {
         type Remainder = U;
 
-        fn provide_with(mut self, _: CloneDependencyMut) -> (T, Self::Remainder) {
+        fn provide_with(mut self, _: CloneDependencyMut<D>) -> (T, Self::Remainder) {
             let dependency = self.provide_mut().clone();
             (dependency, self)
         }
     }
 
-    // TODO clone from reference provided by `Deref` trait
-    //      add generic parameter `D` which implements `Deref<Target = T>`
-    //      then add it to the `CloneDependencyMutWith` struct (to be `CloneDependencyMutWith<D>`)
-    impl<T, U, C> ProvideWith<T, CloneDependencyMutWith<C>> for U
+    impl<T, U, D, C> ProvideWith<T, CloneDependencyMutWith<D, C>> for U
     where
         T: Clone,
-        for<'any> U: ProvideMutWith<'any, &'any T, C>,
+        U: for<'any> ProvideMutWith<'any, D, C>,
+        D: Deref<Target = T>,
     {
         type Remainder = U;
 
-        fn provide_with(mut self, context: CloneDependencyMutWith<C>) -> (T, Self::Remainder) {
+        fn provide_with(mut self, context: CloneDependencyMutWith<D, C>) -> (T, Self::Remainder) {
             let context = context.into_inner();
             let dependency = self.provide_mut_with(context).clone();
             (dependency, self)

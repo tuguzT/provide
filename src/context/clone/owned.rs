@@ -14,8 +14,8 @@ use crate::with::With;
 pub struct CloneDependency;
 
 /// Attach additional context to the current context.
-impl<T> With<T> for CloneDependency {
-    type Output = CloneDependencyWith<T>;
+impl<C> With<C> for CloneDependency {
+    type Output = CloneDependencyWith<C>;
 
     /// Attaches additional context to the current context.
     ///
@@ -29,7 +29,7 @@ impl<T> With<T> for CloneDependency {
     ///
     /// todo!()
     /// ```
-    fn with(self, context: T) -> Self::Output {
+    fn with(self, context: C) -> Self::Output {
         context.into()
     }
 }

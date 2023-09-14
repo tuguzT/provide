@@ -12,8 +12,8 @@ use crate::with::With;
 /// another dependency by *unique reference*.
 ///
 /// This is possible if:
-/// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideMut`](crate::ProvideMut)`<D>`,
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`ProvideMut`](crate::ProvideMut)`<'_, D>`,
 ///
 /// where `T` is the type of dependency to provide.
 pub struct FromDependencyMut<D>(PhantomData<fn() -> D>)
@@ -142,8 +142,8 @@ where
 /// which could be provided with additional context.
 ///
 /// This is possible if:
-/// - pointer to another dependency of type `D` implements [`Into`]`<T>`,
-/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<D, C>`,
+/// - type of another dependency `D` implements [`Into`]`<T>`,
+/// - provider implements [`ProvideMutWith`](crate::with::ProvideMutWith)`<'_, D, C>`,
 ///
 /// where `T` is the type of dependency to provide.
 pub struct FromDependencyMutWith<D, C>
