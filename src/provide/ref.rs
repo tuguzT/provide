@@ -19,6 +19,7 @@ pub trait ProvideRef<'me, T> {
 
 impl<'me, T, U> ProvideRef<'me, &'me T> for U
 where
+    T: ?Sized,
     U: AsRef<T> + ?Sized,
 {
     fn provide_ref(&'me self) -> &'me T {

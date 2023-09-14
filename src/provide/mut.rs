@@ -19,6 +19,7 @@ pub trait ProvideMut<'me, T> {
 
 impl<'me, T, U> ProvideMut<'me, &'me mut T> for U
 where
+    T: ?Sized,
     U: AsMut<T> + ?Sized,
 {
     fn provide_mut(&'me mut self) -> &'me mut T {
