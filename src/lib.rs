@@ -18,7 +18,6 @@ pub use self::{
 };
 
 pub mod context;
-pub mod deref;
 pub mod with;
 
 mod provide;

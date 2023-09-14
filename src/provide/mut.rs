@@ -1,21 +1,10 @@
-use core::ops::DerefMut;
-
 /// Type of provider which provides dependency by *unique reference*.
 ///
 /// This trait can be interpreted as an extension of [`AsMut`] trait
 /// but with the ability to return not only plain unique references.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideMut<T>
-where
-    T: ?Sized,
-{
-    /// Type of unique reference to provided dependency.
-    type Mut<'me>: DerefMut<Target = T>
-    where
-        Self: 'me,
-        T: 'me;
-
+pub trait ProvideMut<'me, T> {
     /// Provides dependency by *unique reference*.
     ///
     /// # Examples
@@ -25,25 +14,14 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_mut<'me>(&'me mut self) -> Self::Mut<'me>
-    where
-        T: 'me;
+    fn provide_mut(&'me mut self) -> T;
 }
 
-impl<T, U> ProvideMut<T> for U
+impl<'me, T, U> ProvideMut<'me, &'me mut T> for U
 where
-    T: ?Sized,
     U: AsMut<T> + ?Sized,
 {
-    type Mut<'me> = &'me mut T
-    where
-        Self: 'me,
-        T: 'me;
-
-    fn provide_mut<'me>(&'me mut self) -> Self::Mut<'me>
-    where
-        T: 'me,
-    {
+    fn provide_mut(&'me mut self) -> &'me mut T {
         self.as_mut()
     }
 }

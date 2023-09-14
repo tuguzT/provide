@@ -1,21 +1,10 @@
-use core::ops::Deref;
-
 /// Type of provider which provides dependency by *shared reference*.
 ///
 /// This trait can be interpreted as an extension of [`AsRef`] trait
 /// but with the ability to return not only plain shared references.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideRef<T>
-where
-    T: ?Sized,
-{
-    /// Type of shared reference to provided dependency.
-    type Ref<'me>: Deref<Target = T>
-    where
-        Self: 'me,
-        T: 'me;
-
+pub trait ProvideRef<'me, T> {
     /// Provides dependency by *shared reference*.
     ///
     /// # Examples
@@ -25,25 +14,14 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_ref<'me>(&'me self) -> Self::Ref<'me>
-    where
-        T: 'me;
+    fn provide_ref(&'me self) -> T;
 }
 
-impl<T, U> ProvideRef<T> for U
+impl<'me, T, U> ProvideRef<'me, &'me T> for U
 where
-    T: ?Sized,
     U: AsRef<T> + ?Sized,
 {
-    type Ref<'me> = &'me T
-    where
-        Self: 'me,
-        T: 'me;
-
-    fn provide_ref<'me>(&'me self) -> Self::Ref<'me>
-    where
-        T: 'me,
-    {
+    fn provide_ref(&'me self) -> &'me T {
         self.as_ref()
     }
 }

@@ -1,5 +1,3 @@
-use core::ops::DerefMut;
-
 /// Type of provider which provides dependency by *unique reference*,
 /// but with additional context provided by the caller.
 ///
@@ -8,16 +6,7 @@ use core::ops::DerefMut;
 /// so it is possible to *define many ways* of how dependency can be provided.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideMutWith<T, C>
-where
-    T: ?Sized,
-{
-    /// Type of unique reference to provided dependency.
-    type Mut<'me>: DerefMut<Target = T>
-    where
-        Self: 'me,
-        T: 'me;
-
+pub trait ProvideMutWith<'me, T, C> {
     /// Provides dependency by *unique reference*
     /// with additional context provided by the caller.
     ///
@@ -28,9 +17,7 @@ where
     ///
     /// todo!()
     /// ```
-    fn provide_mut_with<'me>(&'me mut self, context: C) -> Self::Mut<'me>
-    where
-        T: 'me;
+    fn provide_mut_with(&'me mut self, context: C) -> T;
 }
 
 mod impls {
@@ -45,204 +32,122 @@ mod impls {
             },
             Empty,
         },
-        deref::DerefWrapper,
         with::ProvideRefWith,
         ProvideMut, ProvideRef,
     };
 
     use super::ProvideMutWith;
 
-    impl<T, U> ProvideMutWith<T, Empty> for U
+    impl<'me, T, U> ProvideMutWith<'me, T, Empty> for U
     where
-        T: ?Sized,
-        U: ProvideMut<T> + ?Sized,
+        U: ProvideMut<'me, T> + ?Sized,
     {
-        type Mut<'me> = U::Mut<'me>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(&'me mut self, _: Empty) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, _: Empty) -> T {
             self.provide_mut()
         }
     }
 
-    impl<T, U, D> ProvideMutWith<T, FromDependencyRef<D>> for U
+    impl<'me, T, U, D> ProvideMutWith<'me, T, FromDependencyRef<D>> for U
     where
-        U: ProvideRef<D> + ?Sized,
-        for<'any> U::Ref<'any>: Into<T>,
-        D: ?Sized,
+        U: ProvideRef<'me, D> + ?Sized,
+        D: Into<T>,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(&'me mut self, _: FromDependencyRef<D>) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, _: FromDependencyRef<D>) -> T {
             let dependency = self.provide_ref();
-            let dependency = dependency.into();
-            DerefWrapper::new(dependency)
+            dependency.into()
         }
     }
 
-    impl<T, U, D, C> ProvideMutWith<T, FromDependencyRefWith<D, C>> for U
+    impl<'me, T, U, D, C> ProvideMutWith<'me, T, FromDependencyRefWith<D, C>> for U
     where
-        U: ProvideRefWith<D, C> + ?Sized,
-        for<'any> U::Ref<'any>: Into<T>,
-        D: ?Sized,
+        U: ProvideRefWith<'me, D, C> + ?Sized,
+        D: Into<T>,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(
-            &'me mut self,
-            context: FromDependencyRefWith<D, C>,
-        ) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, context: FromDependencyRefWith<D, C>) -> T {
             let context = context.into_inner();
             let dependency = (*self).provide_ref_with(context);
-            let dependency = dependency.into();
-            DerefWrapper::new(dependency)
+            dependency.into()
         }
     }
 
-    impl<T, U, D> ProvideMutWith<T, FromDependencyMut<D>> for U
+    impl<'me, T, U, D> ProvideMutWith<'me, T, FromDependencyMut<D>> for U
     where
-        U: ProvideMut<D> + ?Sized,
-        for<'any> U::Mut<'any>: Into<T>,
-        D: ?Sized,
+        U: ProvideMut<'me, D> + ?Sized,
+        D: Into<T>,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(&'me mut self, _: FromDependencyMut<D>) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, _: FromDependencyMut<D>) -> T {
             let dependency = self.provide_mut();
-            let dependency = dependency.into();
-            DerefWrapper::new(dependency)
+            dependency.into()
         }
     }
 
-    impl<T, U, D, C> ProvideMutWith<T, FromDependencyMutWith<D, C>> for U
+    impl<'me, T, U, D, C> ProvideMutWith<'me, T, FromDependencyMutWith<D, C>> for U
     where
-        U: ProvideMutWith<D, C> + ?Sized,
-        for<'any> U::Mut<'any>: Into<T>,
-        D: ?Sized,
+        U: ProvideMutWith<'me, D, C> + ?Sized,
+        D: Into<T>,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(
-            &'me mut self,
-            context: FromDependencyMutWith<D, C>,
-        ) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, context: FromDependencyMutWith<D, C>) -> T {
             let context = context.into_inner();
             let dependency = self.provide_mut_with(context);
-            let dependency = dependency.into();
-            DerefWrapper::new(dependency)
-        }
-    }
-
-    impl<T, U> ProvideMutWith<T, CloneDependencyRef> for U
-    where
-        T: Clone,
-        U: ProvideRef<T> + ?Sized,
-    {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(&'me mut self, _: CloneDependencyRef) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
-            let dependency = self.provide_ref().clone();
             dependency.into()
         }
     }
 
-    impl<T, U, C> ProvideMutWith<T, CloneDependencyRefWith<C>> for U
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyRef` struct (to be `CloneDependencyRef<D>`)
+    impl<'me, T, U> ProvideMutWith<'me, T, CloneDependencyRef> for U
     where
-        T: Clone,
-        U: ProvideRefWith<T, C> + ?Sized,
+        T: Clone + 'me,
+        U: ProvideRef<'me, &'me T> + ?Sized,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
+        fn provide_mut_with(&'me mut self, _: CloneDependencyRef) -> T {
+            let dependency = self.provide_ref();
+            dependency.clone()
+        }
+    }
 
-        fn provide_mut_with<'me>(
-            &'me mut self,
-            context: CloneDependencyRefWith<C>,
-        ) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyRefWith` struct (to be `CloneDependencyRefWith<D, C>`)
+    impl<'me, T, U, C> ProvideMutWith<'me, T, CloneDependencyRefWith<C>> for U
+    where
+        T: Clone + 'me,
+        U: ProvideRefWith<'me, &'me T, C> + ?Sized,
+    {
+        fn provide_mut_with(&'me mut self, context: CloneDependencyRefWith<C>) -> T {
             let context = context.into_inner();
-            let dependency = (*self).provide_ref_with(context).clone();
-            dependency.into()
+            let dependency = (*self).provide_ref_with(context);
+            dependency.clone()
         }
     }
 
-    impl<T, U> ProvideMutWith<T, CloneDependencyMut> for U
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyMut` struct (to be `CloneDependencyMut<D>`)
+    impl<'me, T, U> ProvideMutWith<'me, T, CloneDependencyMut> for U
     where
-        T: Clone,
-        U: ProvideMut<T> + ?Sized,
+        T: Clone + 'me,
+        U: ProvideMut<'me, &'me T> + ?Sized,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(&'me mut self, _: CloneDependencyMut) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
-            let dependency = self.provide_mut().clone();
-            dependency.into()
+        fn provide_mut_with(&'me mut self, _: CloneDependencyMut) -> T {
+            let dependency = self.provide_mut();
+            dependency.clone()
         }
     }
 
-    impl<T, U, C> ProvideMutWith<T, CloneDependencyMutWith<C>> for U
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyMutWith` struct (to be `CloneDependencyMutWith<D>`)
+    impl<'me, T, U, C> ProvideMutWith<'me, T, CloneDependencyMutWith<C>> for U
     where
-        T: Clone,
-        U: ProvideMutWith<T, C> + ?Sized,
+        T: Clone + 'me,
+        U: ProvideMutWith<'me, &'me T, C> + ?Sized,
     {
-        type Mut<'me> = DerefWrapper<T>
-        where
-            Self: 'me,
-            T: 'me;
-
-        fn provide_mut_with<'me>(
-            &'me mut self,
-            context: CloneDependencyMutWith<C>,
-        ) -> Self::Mut<'me>
-        where
-            T: 'me,
-        {
+        fn provide_mut_with(&'me mut self, context: CloneDependencyMutWith<C>) -> T {
             let context = context.into_inner();
-            let dependency = self.provide_mut_with(context).clone();
-            dependency.into()
+            let dependency = self.provide_mut_with(context);
+            dependency.clone()
         }
     }
 }

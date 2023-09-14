@@ -85,9 +85,8 @@ mod impls {
 
     impl<T, U, D> ProvideWith<T, FromDependencyRef<D>> for U
     where
-        U: ProvideRef<D>,
-        for<'any> U::Ref<'any>: Into<T>,
-        D: ?Sized,
+        for<'any> U: ProvideRef<'any, D>,
+        D: Into<T>,
     {
         type Remainder = U;
 
@@ -100,9 +99,8 @@ mod impls {
 
     impl<T, U, D, C> ProvideWith<T, FromDependencyRefWith<D, C>> for U
     where
-        U: ProvideRefWith<D, C>,
-        for<'any> U::Ref<'any>: Into<T>,
-        D: ?Sized,
+        for<'any> U: ProvideRefWith<'any, D, C>,
+        D: Into<T>,
     {
         type Remainder = U;
 
@@ -116,9 +114,8 @@ mod impls {
 
     impl<T, U, D> ProvideWith<T, FromDependencyMut<D>> for U
     where
-        U: ProvideMut<D>,
-        for<'any> U::Mut<'any>: Into<T>,
-        D: ?Sized,
+        for<'any> U: ProvideMut<'any, D>,
+        D: Into<T>,
     {
         type Remainder = U;
 
@@ -131,9 +128,8 @@ mod impls {
 
     impl<T, U, D, C> ProvideWith<T, FromDependencyMutWith<D, C>> for U
     where
-        U: ProvideMutWith<D, C>,
-        for<'any> U::Mut<'any>: Into<T>,
-        D: ?Sized,
+        for<'any> U: ProvideMutWith<'any, D, C>,
+        D: Into<T>,
     {
         type Remainder = U;
 
@@ -176,10 +172,13 @@ mod impls {
         }
     }
 
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyRef` struct (to be `CloneDependencyRef<D>`)
     impl<T, U> ProvideWith<T, CloneDependencyRef> for U
     where
         T: Clone,
-        U: ProvideRef<T>,
+        for<'any> U: ProvideRef<'any, &'any T>,
     {
         type Remainder = U;
 
@@ -189,10 +188,13 @@ mod impls {
         }
     }
 
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyRefWith` struct (to be `CloneDependencyRefWith<D, C>`)
     impl<T, U, C> ProvideWith<T, CloneDependencyRefWith<C>> for U
     where
         T: Clone,
-        U: ProvideRefWith<T, C>,
+        for<'any> U: ProvideRefWith<'any, &'any T, C>,
     {
         type Remainder = U;
 
@@ -203,10 +205,13 @@ mod impls {
         }
     }
 
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyMut` struct (to be `CloneDependencyMut<D>`)
     impl<T, U> ProvideWith<T, CloneDependencyMut> for U
     where
         T: Clone,
-        U: ProvideMut<T>,
+        for<'any> U: ProvideMut<'any, &'any T>,
     {
         type Remainder = U;
 
@@ -216,10 +221,13 @@ mod impls {
         }
     }
 
+    // TODO clone from reference provided by `Deref` trait
+    //      add generic parameter `D` which implements `Deref<Target = T>`
+    //      then add it to the `CloneDependencyMutWith` struct (to be `CloneDependencyMutWith<D>`)
     impl<T, U, C> ProvideWith<T, CloneDependencyMutWith<C>> for U
     where
         T: Clone,
-        U: ProvideMutWith<T, C>,
+        for<'any> U: ProvideMutWith<'any, &'any T, C>,
     {
         type Remainder = U;
 
