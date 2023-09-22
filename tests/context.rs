@@ -1,5 +1,5 @@
 use provide::{
-    with::{ProvideRefWith, ProvideWith},
+    with::{ProvideMutWith, ProvideRefWith, ProvideWith},
     ProvideRef,
 };
 
@@ -8,6 +8,20 @@ fn empty() {
     let provider = 1;
     let (dependency, _): (i32, _) = provider.provide_with(());
     assert_eq!(dependency, 1);
+}
+
+#[test]
+fn empty_ref() {
+    let provider = "hello";
+    let dependency: &str = provider.provide_ref_with(());
+    assert_eq!(dependency, "hello");
+}
+
+#[test]
+fn empty_mut() {
+    let mut provider = vec![1, 2, 3, 4, 5];
+    let dependency: &mut [_] = provider.provide_mut_with(());
+    assert_eq!(dependency, &mut [1, 2, 3, 4, 5]);
 }
 
 #[test]
