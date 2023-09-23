@@ -1,49 +1,36 @@
-use provide::with::{ProvideMutWith, ProvideRefWith};
+use provide::with::{ProvideMutWith, ProvideRefWith, ProvideWith};
 
-// #[test]
-// fn by_value() {
-//     use provide::with::ProvideWith;
+#[test]
+fn by_value() {
+    struct GenericProvider<T>(T)
+    where
+        T: ?Sized;
 
-//     struct GenericProvider<T>(T)
-//     where
-//         T: ?Sized;
+    #[derive(Default)]
+    struct WrapOptionWith<C>(C)
+    where
+        C: ?Sized;
 
-//     #[derive(Default)]
-//     struct WrapOptionWith<C>(C)
-//     where
-//         C: ?Sized;
+    impl<T, U, C> ProvideWith<Option<T>, WrapOptionWith<C>> for GenericProvider<U>
+    where
+        U: ProvideWith<T, C>,
+    {
+        type Remainder = U::Remainder;
 
-//     impl<T, U, C> ProvideWith<Option<T>, WrapOptionWith<C>> for GenericProvider<U>
-//     where
-//         U: ProvideWith<T, C>,
-//     {
-//         type Remainder = U::Remainder;
+        fn provide_with(self, context: WrapOptionWith<C>) -> (Option<T>, Self::Remainder) {
+            let Self(provider) = self;
+            let WrapOptionWith(context) = context;
+            let (dependency, remainder) = provider.provide_with(context);
+            let dependency = Some(dependency);
+            (dependency, remainder)
+        }
+    }
 
-//         fn provide_with(self, context: WrapOptionWith<C>) -> (Option<T>, Self::Remainder) {
-//             let Self(provider) = self;
-//             let WrapOptionWith(context) = context;
-//             let (dependency, remainder) = provider.provide_with(context);
-//             let dependency = Some(dependency);
-//             (dependency, remainder)
-//         }
-//     }
-
-//     let provider = GenericProvider(1);
-//     let context = WrapOptionWith::<()>::default();
-//     // TODO fix somehow
-//     // error[E0275]: overflow evaluating the requirement `by_value::GenericProvider<{integer}>: provide::Provide<_>`
-//     //   --> tests\my_context.rs:44:36
-//     //    |
-//     // 44 |     let (dependency, _) = provider.provide_with(context);
-//     //    |                                    ^^^^^^^^^^^^
-//     //    |
-//     //    = help: consider increasing the recursion limit by adding a `#![recursion_limit = "256"]` attribute to your crate (`my_context`)
-//     //    = note: required for `by_value::GenericProvider<{integer}>` to implement `provide::with::ProvideWith<_, provide::context::convert::FromDependency<_>>`
-//     //    = note: 127 redundant requirements hidden
-//     //    = note: required for `by_value::GenericProvider<{integer}>` to implement `provide::with::ProvideWith<_, provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::clone::CloneDependencyWith<provide::context::convert::FromDependency<_>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`
-//     let (dependency, _) = provider.provide_with(context);
-//     assert_eq!(dependency, Some(1));
-// }
+    let provider = GenericProvider(1);
+    let context = WrapOptionWith::<()>::default();
+    let (dependency, _) = ProvideWith::<_, WrapOptionWith<()>>::provide_with(provider, context);
+    assert_eq!(dependency, Some(1));
+}
 
 #[test]
 fn by_ref() {
