@@ -6,7 +6,7 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
-use crate::with::With;
+use crate::{context::Empty, with::With};
 
 /// Context which allows to provide dependency by *cloning* from *unique reference*.
 ///
@@ -14,15 +14,13 @@ use crate::with::With;
 /// - type of dependency to provide `T` implements [`Clone`],
 /// - type of unique reference `D` implements [`Deref`]`<`[`Target`](Deref::Target)` = T>`,
 /// - provider implements [`ProvideMut`](crate::ProvideMut)`<'_, D>`.
-pub struct CloneDependencyMut<D>(PhantomData<fn() -> D>)
-where
-    D: ?Sized;
+pub type CloneDependencyMut<D> = CloneDependencyMutWith<D, Empty>;
 
 impl<D> CloneDependencyMut<D>
 where
     D: ?Sized,
 {
-    /// Creates new clone dependency context.
+    /// Creates self with empty context.
     ///
     /// # Examples
     ///
@@ -32,111 +30,12 @@ where
     /// todo!()
     /// ```
     pub const fn new() -> Self {
-        Self(PhantomData)
-    }
-}
-
-impl<D> Debug for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let type_name = core::any::type_name::<D>();
-        write!(f, "CloneDependencyMut<{type_name}>")
-    }
-}
-
-impl<D> Default for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<D> Clone for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl<D> Copy for CloneDependencyMut<D> where D: ?Sized {}
-
-impl<D> PartialEq for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn eq(&self, other: &Self) -> bool {
-        let Self(this) = self;
-        let Self(other) = other;
-        this == other
-    }
-}
-
-impl<D> Eq for CloneDependencyMut<D> where D: ?Sized {}
-
-impl<D> PartialOrd for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        let Self(this) = self;
-        let Self(other) = other;
-        this.partial_cmp(other)
-    }
-}
-
-impl<D> Ord for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        let Self(this) = self;
-        let Self(other) = other;
-        this.cmp(other)
-    }
-}
-
-impl<D> Hash for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
-        let Self(this) = self;
-        this.hash(state)
-    }
-}
-
-/// Attach additional context to the current context.
-impl<D, C> With<C> for CloneDependencyMut<D>
-where
-    D: ?Sized,
-{
-    type Output = CloneDependencyMutWith<D, C>;
-
-    /// Attaches additional context to the current context.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use provide::context::clone::{
-    ///     CloneDependencyMut,
-    ///     CloneDependencyMutWith,
-    /// };
-    ///
-    /// todo!()
-    /// ```
-    fn with(self, context: C) -> Self::Output {
-        context.into()
+        Self::with(())
     }
 }
 
 /// Context which allows to provide dependency by *cloning* from *unique reference*
-/// which could be provided with additional context.
+/// with additional context.
 ///
 /// This is possible if:
 /// - type of dependency to provide `T` implements [`Clone`],
@@ -156,7 +55,7 @@ impl<D, C> CloneDependencyMutWith<D, C>
 where
     D: ?Sized,
 {
-    /// Creates self from provided context.
+    /// Creates self with provided context.
     ///
     /// # Examples
     ///
@@ -165,7 +64,7 @@ where
     ///
     /// todo!()
     /// ```
-    pub const fn new(context: C) -> Self {
+    pub const fn with(context: C) -> Self {
         let phantom = PhantomData;
         Self { phantom, context }
     }
@@ -185,12 +84,35 @@ where
     }
 }
 
+impl<D, C, T> With<T> for CloneDependencyMutWith<D, C>
+where
+    D: ?Sized,
+    C: With<T>,
+{
+    type Output = CloneDependencyMutWith<D, C::Output>;
+
+    /// Attaches additional context to the current context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::CloneDependencyMutWith;
+    ///
+    /// todo!()
+    /// ```
+    fn with(self, dependency: T) -> Self::Output {
+        let context = self.into_inner();
+        let context = context.with(dependency);
+        context.into()
+    }
+}
+
 impl<D, C> From<C> for CloneDependencyMutWith<D, C>
 where
     D: ?Sized,
 {
     fn from(context: C) -> Self {
-        Self::new(context)
+        Self::with(context)
     }
 }
 
@@ -213,7 +135,7 @@ where
 {
     fn default() -> Self {
         let context = Default::default();
-        Self::new(context)
+        Self::with(context)
     }
 }
 
@@ -225,7 +147,7 @@ where
     fn clone(&self) -> Self {
         let Self { context, .. } = self;
         let context = context.clone();
-        Self::new(context)
+        Self::with(context)
     }
 }
 

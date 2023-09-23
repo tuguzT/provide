@@ -24,11 +24,7 @@ mod impls {
     use core::ops::Deref;
 
     use crate::{
-        context::{
-            clone::{CloneDependencyRef, CloneDependencyRefWith},
-            convert::{FromDependencyRef, FromDependencyRefWith},
-            Empty,
-        },
+        context::{clone::CloneDependencyRefWith, convert::FromDependencyRefWith, Empty},
         ProvideRef,
     };
 
@@ -43,17 +39,6 @@ mod impls {
         }
     }
 
-    impl<'me, T, U, D> ProvideRefWith<'me, T, FromDependencyRef<D>> for U
-    where
-        U: ProvideRef<'me, D> + ?Sized,
-        D: Into<T>,
-    {
-        fn provide_ref_with(&'me self, _: FromDependencyRef<D>) -> T {
-            let dependency = self.provide_ref();
-            dependency.into()
-        }
-    }
-
     impl<'me, T, U, D, C> ProvideRefWith<'me, T, FromDependencyRefWith<D, C>> for U
     where
         U: ProvideRefWith<'me, D, C> + ?Sized,
@@ -63,18 +48,6 @@ mod impls {
             let context = context.into_inner();
             let dependency = (*self).provide_ref_with(context);
             dependency.into()
-        }
-    }
-
-    impl<'me, T, U, D> ProvideRefWith<'me, T, CloneDependencyRef<D>> for U
-    where
-        T: Clone,
-        U: ProvideRef<'me, D> + ?Sized,
-        D: Deref<Target = T>,
-    {
-        fn provide_ref_with(&'me self, _: CloneDependencyRef<D>) -> T {
-            let dependency = self.provide_ref();
-            dependency.clone()
         }
     }
 

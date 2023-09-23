@@ -3,39 +3,32 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
-use crate::with::With;
+use crate::{context::Empty, with::With};
 
 /// Context which allows to provide dependency by *cloning* a *value*.
 ///
 /// This is possible if:
 /// - type of dependency `T` implements [`Clone`],
 /// - provider implements [`Provide`](crate::Provide)`<T>`.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CloneDependency;
+pub type CloneDependency = CloneDependencyWith<Empty>;
 
-/// Attach additional context to the current context.
-impl<C> With<C> for CloneDependency {
-    type Output = CloneDependencyWith<C>;
-
-    /// Attaches additional context to the current context.
+impl CloneDependency {
+    /// Creates self with empty context.
     ///
     /// # Examples
     ///
     /// ```
-    /// use provide::context::clone::{
-    ///     CloneDependency,
-    ///     CloneDependencyWith,
-    /// };
+    /// use provide::context::clone::CloneDependency;
     ///
     /// todo!()
     /// ```
-    fn with(self, context: C) -> Self::Output {
-        context.into()
+    pub const fn new() -> Self {
+        Self::with(())
     }
 }
 
 /// Context which allows to provide dependency by *cloning* a *value*
-/// which could be provided with additional context.
+/// with additional context.
 ///
 /// This is possible if:
 /// - type of dependency `T` implements [`Clone`],
@@ -46,7 +39,7 @@ where
     C: ?Sized;
 
 impl<C> CloneDependencyWith<C> {
-    /// Creates self from provided context.
+    /// Creates self with provided context.
     ///
     /// # Examples
     ///
@@ -55,7 +48,7 @@ impl<C> CloneDependencyWith<C> {
     ///
     /// todo!()
     /// ```
-    pub const fn new(context: C) -> Self {
+    pub const fn with(context: C) -> Self {
         Self(context)
     }
 
@@ -74,9 +67,31 @@ impl<C> CloneDependencyWith<C> {
     }
 }
 
+impl<C, T> With<T> for CloneDependencyWith<C>
+where
+    C: With<T>,
+{
+    type Output = CloneDependencyWith<C::Output>;
+
+    /// Attaches additional context to the current context.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::context::clone::CloneDependencyWith;
+    ///
+    /// todo!()
+    /// ```
+    fn with(self, dependency: T) -> Self::Output {
+        let context = self.into_inner();
+        let context = context.with(dependency);
+        context.into()
+    }
+}
+
 impl<C> From<C> for CloneDependencyWith<C> {
     fn from(context: C) -> Self {
-        Self::new(context)
+        Self::with(context)
     }
 }
 
