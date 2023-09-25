@@ -3,7 +3,7 @@ use provide::with::{ProvideMutWith, ProvideRefWith, ProvideWith};
 #[test]
 fn by_value() {
     let provider = 1;
-    let (dependency, _): (i32, _) = ProvideWith::<_, ()>::provide_with(provider, ());
+    let (dependency, _) = ProvideWith::<i32, ()>::provide_with(provider, ());
     assert_eq!(dependency, 1);
 }
 
