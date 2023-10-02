@@ -13,6 +13,7 @@
 #![no_std]
 
 pub use self::{
+    context::Context,
     provide::{Provide, ProvideMut, ProvideRef},
     with::With,
 };
