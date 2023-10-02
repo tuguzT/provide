@@ -11,7 +11,7 @@ use super::{
 /// you should make new extension trait which derives from the current one.
 pub trait Context: Sized {
     /// Allows to clone dependency
-    /// after it was provided *by value* with `self` context.
+    /// after it was provided by *value* with `self` context.
     ///
     /// # Examples
     ///
@@ -25,7 +25,7 @@ pub trait Context: Sized {
     }
 
     /// Allows to clone dependency
-    /// after it was provided *by shared reference* with `self` context.
+    /// after it was provided by *shared reference* with `self` context.
     ///
     /// # Examples
     ///
@@ -41,8 +41,8 @@ pub trait Context: Sized {
         self.into()
     }
 
-    /// Allows to clone dependency after
-    /// it was provided *by unique reference* with `self` context.
+    /// Allows to clone dependency
+    /// after it was provided by *unique reference* with `self` context.
     ///
     /// # Examples
     ///
@@ -59,7 +59,7 @@ pub trait Context: Sized {
     }
 
     /// Allows to create dependency from another dependency
-    /// after it was provided *by value* with `self` context.
+    /// after it was provided by *value* with `self` context.
     ///
     /// # Examples
     ///
@@ -76,7 +76,7 @@ pub trait Context: Sized {
     }
 
     /// Allows to create dependency from another dependency
-    /// after it was provided *by shared reference* with `self` context.
+    /// after it was provided by *shared reference* with `self` context.
     ///
     /// # Examples
     ///
@@ -93,7 +93,7 @@ pub trait Context: Sized {
     }
 
     /// Allows to create dependency from another dependency
-    /// after it was provided *by unique reference* with `self` context.
+    /// after it was provided by *unique reference* with `self` context.
     ///
     /// # Examples
     ///
