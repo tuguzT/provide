@@ -2,8 +2,12 @@
 //!
 //! See [crate] documentation for more.
 
+pub use self::context::Context;
+
 pub mod clone;
 pub mod convert;
+
+mod context;
 
 /// Context which represents no meaningful context.
 pub type Empty = ();
