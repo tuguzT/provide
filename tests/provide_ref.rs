@@ -1,6 +1,36 @@
 use provide::ProvideRef;
 
 #[test]
+fn self_impl() {
+    struct Provider {
+        foo: i32,
+        bar: f32,
+    }
+
+    impl AsRef<i32> for Provider {
+        fn as_ref(&self) -> &i32 {
+            let Self { foo, .. } = self;
+            foo
+        }
+    }
+
+    impl AsRef<f32> for Provider {
+        fn as_ref(&self) -> &f32 {
+            let Self { bar, .. } = self;
+            bar
+        }
+    }
+
+    let provider = Provider { foo: 1, bar: 2.0 };
+
+    let dependency: &i32 = provider.provide_ref();
+    assert_eq!(dependency, &1);
+
+    let dependency: &f32 = provider.provide_ref();
+    assert_eq!(dependency, &2.0);
+}
+
+#[test]
 fn manual_impl() {
     struct Provider {
         foo: i32,
@@ -25,36 +55,6 @@ fn manual_impl() {
 
     let dependency: i32 = provider.provide_ref();
     assert_eq!(dependency, 1);
-
-    let dependency: &f32 = provider.provide_ref();
-    assert_eq!(dependency, &2.0);
-}
-
-#[test]
-fn from_impl() {
-    struct Provider {
-        foo: i32,
-        bar: f32,
-    }
-
-    impl AsRef<i32> for Provider {
-        fn as_ref(&self) -> &i32 {
-            let Self { foo, .. } = self;
-            foo
-        }
-    }
-
-    impl AsRef<f32> for Provider {
-        fn as_ref(&self) -> &f32 {
-            let Self { bar, .. } = self;
-            bar
-        }
-    }
-
-    let provider = Provider { foo: 1, bar: 2.0 };
-
-    let dependency: &i32 = provider.provide_ref();
-    assert_eq!(dependency, &1);
 
     let dependency: &f32 = provider.provide_ref();
     assert_eq!(dependency, &2.0);

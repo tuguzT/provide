@@ -22,14 +22,10 @@ pub trait Provide<T> {
     fn provide(self) -> (T, Self::Remainder);
 }
 
-impl<T, U> Provide<T> for U
-where
-    U: Into<T>,
-{
+impl<T> Provide<T> for T {
     type Remainder = ();
 
     fn provide(self) -> (T, Self::Remainder) {
-        let dependency = self.into();
-        (dependency, ())
+        (self, ())
     }
 }
