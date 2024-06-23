@@ -6,8 +6,7 @@ use provide::{
 #[test]
 fn by_value() {
     let provider = 1;
-    let (dependency, _) =
-        ProvideWith::<f64, FromDependency<i32>>::provide_with(provider, Default::default());
+    let (dependency, _): (f64, _) = provider.provide_with(FromDependency::<i32>::default());
     assert_eq!(dependency, 1.0);
 }
 

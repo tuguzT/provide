@@ -21,8 +21,7 @@ fn by_value() {
             let Self(provider) = self;
             let WrapOptionWith(context) = context;
             let (dependency, remainder) = provider.provide_with(context);
-            let dependency = Some(dependency);
-            (dependency, remainder)
+            (Some(dependency), remainder)
         }
     }
 
