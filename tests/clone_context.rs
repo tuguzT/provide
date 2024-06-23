@@ -6,7 +6,8 @@ use provide::{
 #[test]
 fn by_value() {
     let provider = vec![1, 2, 3, 4, 5];
-    let (dependency, provider): (Vec<_>, _) = provider.provide_with(CloneDependency::default());
+    let context = CloneDependency::<Vec<_>>::default();
+    let (dependency, provider): (Vec<_>, _) = provider.provide_with(context);
     assert_eq!(dependency, provider);
 }
 

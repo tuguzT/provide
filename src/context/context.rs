@@ -20,7 +20,10 @@ pub trait Context: Sized {
     ///
     /// todo!()
     /// ```
-    fn then_clone(self) -> CloneDependencyWith<Self> {
+    fn then_clone<D>(self) -> CloneDependencyWith<D, Self>
+    where
+        D: ?Sized,
+    {
         self.into()
     }
 

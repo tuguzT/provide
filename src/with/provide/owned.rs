@@ -95,18 +95,19 @@ mod impls {
         }
     }
 
-    impl<T, U, C> ProvideWith<T, CloneDependencyWith<C>> for U
+    impl<T, U, D, C> ProvideWith<T, CloneDependencyWith<D, C>> for U
     where
-        T: Clone,
-        U: ProvideWith<T, C>,
-        U::Remainder: With<T>,
+        U: ProvideWith<D, C>,
+        U::Remainder: With<D>,
+        D: Into<T> + Clone,
     {
-        type Remainder = <U::Remainder as With<T>>::Output;
+        type Remainder = <U::Remainder as With<D>>::Output;
 
-        fn provide_with(self, context: CloneDependencyWith<C>) -> (T, Self::Remainder) {
+        fn provide_with(self, context: CloneDependencyWith<D, C>) -> (T, Self::Remainder) {
             let context = context.into_inner();
-            let (dependency, remainder) = self.provide_with(context);
-            let remainder = remainder.with(dependency.clone());
+            let (original_dependency, remainder) = self.provide_with(context);
+            let dependency = original_dependency.clone().into();
+            let remainder = remainder.with(original_dependency);
             (dependency, remainder)
         }
     }
