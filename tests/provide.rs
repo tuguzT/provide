@@ -1,13 +1,6 @@
 use provide::Provide;
 
 #[test]
-fn self_impl() {
-    let provider = 1;
-    let (dependency, _) = provider.provide();
-    assert_eq!(dependency, 1);
-}
-
-#[test]
 fn manual_impl() {
     struct Provider {
         foo: i32,
@@ -24,6 +17,22 @@ fn manual_impl() {
     }
 
     let provider = Provider { foo: 1, bar: 2.0 };
+    let (dependency, _): (i32, _) = provider.provide();
+    assert_eq!(dependency, 1);
+}
+
+#[test]
+fn from_impl() {
+    struct Provider(i32);
+
+    impl From<Provider> for i32 {
+        fn from(provider: Provider) -> Self {
+            let Provider(dependency) = provider;
+            dependency
+        }
+    }
+
+    let provider = Provider(1);
     let (dependency, _): (i32, _) = provider.provide();
     assert_eq!(dependency, 1);
 }

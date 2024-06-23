@@ -1,36 +1,6 @@
 use provide::ProvideMut;
 
 #[test]
-fn self_impl() {
-    struct Provider {
-        foo: i32,
-        bar: f32,
-    }
-
-    impl AsMut<i32> for Provider {
-        fn as_mut(&mut self) -> &mut i32 {
-            let Self { foo, .. } = self;
-            foo
-        }
-    }
-
-    impl AsMut<f32> for Provider {
-        fn as_mut(&mut self) -> &mut f32 {
-            let Self { bar, .. } = self;
-            bar
-        }
-    }
-
-    let mut provider = Provider { foo: 1, bar: 2.0 };
-
-    let dependency: &mut i32 = provider.provide_mut();
-    assert_eq!(dependency, &mut 1);
-
-    let dependency: &mut f32 = provider.provide_mut();
-    assert_eq!(dependency, &mut 2.0);
-}
-
-#[test]
 fn manual_impl() {
     struct Provider {
         foo: i32,
@@ -55,6 +25,36 @@ fn manual_impl() {
 
     let dependency: i32 = provider.provide_mut();
     assert_eq!(dependency, 1);
+
+    let dependency: &mut f32 = provider.provide_mut();
+    assert_eq!(dependency, &mut 2.0);
+}
+
+#[test]
+fn from_impl() {
+    struct Provider {
+        foo: i32,
+        bar: f32,
+    }
+
+    impl AsMut<i32> for Provider {
+        fn as_mut(&mut self) -> &mut i32 {
+            let Self { foo, .. } = self;
+            foo
+        }
+    }
+
+    impl AsMut<f32> for Provider {
+        fn as_mut(&mut self) -> &mut f32 {
+            let Self { bar, .. } = self;
+            bar
+        }
+    }
+
+    let mut provider = Provider { foo: 1, bar: 2.0 };
+
+    let dependency: &mut i32 = provider.provide_mut();
+    assert_eq!(dependency, &mut 1);
 
     let dependency: &mut f32 = provider.provide_mut();
     assert_eq!(dependency, &mut 2.0);
