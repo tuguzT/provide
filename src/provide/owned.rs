@@ -5,7 +5,7 @@
 /// or in chain to retrieve more dependencies.
 ///
 /// See [crate] documentation for more.
-pub trait Provide<T> {
+pub trait Provide<T>: Sized {
     /// Remaining part of the provider after providing dependency by value.
     type Remainder;
 

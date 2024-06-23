@@ -6,7 +6,7 @@
 /// so it is possible to *define many ways* of how dependency can be provided.
 ///
 /// See [crate] documentation for more.
-pub trait ProvideWith<T, C> {
+pub trait ProvideWith<T, C>: Sized {
     /// Remaining part of the provider after providing dependency by value.
     type Remainder;
 

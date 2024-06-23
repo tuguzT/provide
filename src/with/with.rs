@@ -6,7 +6,7 @@
 /// where the [output](With::Output) is product type consisting of self and provided dependency.
 ///
 /// See [crate] documentation for more.
-pub trait With<T> {
+pub trait With<T>: Sized {
     /// Type of new provider with provided dependency.
     type Output;
 
