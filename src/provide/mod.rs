@@ -1,4 +1,8 @@
-pub use self::{owned::Provide, r#mut::ProvideMut, r#ref::ProvideRef};
+pub use self::{
+    owned::{Provide, TryProvide},
+    r#mut::{ProvideMut, TryProvideMut},
+    r#ref::{ProvideRef, TryProvideRef},
+};
 
 mod r#mut;
 mod owned;
