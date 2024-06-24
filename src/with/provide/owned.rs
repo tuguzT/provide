@@ -24,8 +24,37 @@ pub trait ProvideWith<T, C>: Sized {
     fn provide_with(self, context: C) -> (T, Self::Remainder);
 }
 
+/// Type of provider which can provide dependency by *value*,
+/// but with additional context provided by the caller, or fail.
+///
+/// This trait is very similar to [`TryProvide`](crate::TryProvide) trait.
+/// However, this trait allows to retrieve additional context provided by the caller,
+/// so it is possible to *define many ways* of how dependency can be provided.
+///
+/// See [crate] documentation for more.
+pub trait TryProvideWith<T, C>: Sized {
+    /// Remaining part of the provider after providing dependency by value.
+    type Remainder;
+
+    /// The type returned in the event of an error.
+    type Error;
+
+    /// Tries to provide dependency by *value*
+    /// with additional context provided by the caller,
+    /// also returning [remaining part](TryProvideWith::Remainder) of the provider on success.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use provide::with::TryProvideWith;
+    ///
+    /// todo!()
+    /// ```
+    fn try_provide_with(self, context: C) -> Result<(T, Self::Remainder), Self::Error>;
+}
+
 mod impls {
-    use core::ops::Deref;
+    use core::{convert::Infallible, ops::Deref};
 
     use crate::{
         context::{
@@ -37,7 +66,7 @@ mod impls {
         Provide,
     };
 
-    use super::ProvideWith;
+    use super::{ProvideWith, TryProvideWith};
 
     impl<T, U> ProvideWith<T, Empty> for U
     where
@@ -47,6 +76,20 @@ mod impls {
 
         fn provide_with(self, _: Empty) -> (T, Self::Remainder) {
             self.provide()
+        }
+    }
+
+    impl<T, U, C> TryProvideWith<T, C> for U
+    where
+        U: ProvideWith<T, C>,
+    {
+        type Remainder = U::Remainder;
+
+        type Error = Infallible;
+
+        fn try_provide_with(self, context: C) -> Result<(T, Self::Remainder), Self::Error> {
+            let provide_with = self.provide_with(context);
+            Ok(provide_with)
         }
     }
 

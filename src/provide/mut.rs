@@ -58,7 +58,7 @@ where
     type Error = Infallible;
 
     fn try_provide_mut(&'me mut self) -> Result<T, Self::Error> {
-        let provide_ref = self.provide_mut();
-        Ok(provide_ref)
+        let provide_mut = self.provide_mut();
+        Ok(provide_mut)
     }
 }
