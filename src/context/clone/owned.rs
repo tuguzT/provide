@@ -4,7 +4,10 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
-use crate::{context::Empty, with::With};
+use crate::{
+    context::Empty,
+    with::{ProvideWith, With},
+};
 
 /// Context which allows to provide dependency by *cloning* a *value*.
 ///
@@ -178,5 +181,22 @@ where
 {
     fn borrow_mut(&mut self) -> &mut C {
         self.deref_mut()
+    }
+}
+
+impl<T, U, D, C> ProvideWith<T, CloneDependencyWith<D, C>> for U
+where
+    U: ProvideWith<D, C>,
+    U::Remainder: With<D>,
+    D: Into<T> + Clone,
+{
+    type Remainder = <U::Remainder as With<D>>::Output;
+
+    fn provide_with(self, context: CloneDependencyWith<D, C>) -> (T, Self::Remainder) {
+        let context = context.into_inner();
+        let (original_dependency, remainder) = self.provide_with(context);
+        let dependency = original_dependency.clone().into();
+        let remainder = remainder.with(original_dependency);
+        (dependency, remainder)
     }
 }

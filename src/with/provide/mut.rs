@@ -1,15 +1,6 @@
-use core::{convert::Infallible, ops::Deref};
+use core::convert::Infallible;
 
-use crate::{
-    context::{
-        clone::{CloneDependencyMutWith, CloneDependencyRefWith},
-        convert::{FromDependencyMutWith, FromDependencyRefWith},
-        Empty,
-    },
-    ProvideMut,
-};
-
-use super::ProvideRefWith;
+use crate::{context::Empty, ProvideMut};
 
 /// Type of provider which provides dependency by *unique reference*,
 /// but with additional context provided by the caller.
@@ -39,56 +30,6 @@ where
 {
     fn provide_mut_with(&'me mut self, _: Empty) -> T {
         self.provide_mut()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideMutWith<'me, T, FromDependencyRefWith<D, C>> for U
-where
-    U: ProvideRefWith<'me, D, C> + ?Sized,
-    D: Into<T>,
-{
-    fn provide_mut_with(&'me mut self, context: FromDependencyRefWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = (*self).provide_ref_with(context);
-        dependency.into()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideMutWith<'me, T, FromDependencyMutWith<D, C>> for U
-where
-    U: ProvideMutWith<'me, D, C> + ?Sized,
-    D: Into<T>,
-{
-    fn provide_mut_with(&'me mut self, context: FromDependencyMutWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = self.provide_mut_with(context);
-        dependency.into()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideMutWith<'me, T, CloneDependencyRefWith<D, C>> for U
-where
-    T: Clone,
-    U: ProvideRefWith<'me, D, C> + ?Sized,
-    D: Deref<Target = T>,
-{
-    fn provide_mut_with(&'me mut self, context: CloneDependencyRefWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = (*self).provide_ref_with(context);
-        dependency.clone()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideMutWith<'me, T, CloneDependencyMutWith<D, C>> for U
-where
-    T: Clone,
-    U: ProvideMutWith<'me, D, C> + ?Sized,
-    D: Deref<Target = T>,
-{
-    fn provide_mut_with(&'me mut self, context: CloneDependencyMutWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = self.provide_mut_with(context);
-        dependency.clone()
     }
 }
 

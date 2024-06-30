@@ -6,7 +6,10 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
-use crate::{context::Empty, with::With};
+use crate::{
+    context::Empty,
+    with::{ProvideMutWith, ProvideRefWith, ProvideWith, With},
+};
 
 /// Context which allows to provide dependency by *cloning* from *shared reference*.
 ///
@@ -277,5 +280,46 @@ where
 {
     fn borrow_mut(&mut self) -> &mut C {
         self.deref_mut()
+    }
+}
+
+impl<T, U, D, C> ProvideWith<T, CloneDependencyRefWith<D, C>> for U
+where
+    T: Clone,
+    U: for<'any> ProvideRefWith<'any, D, C>,
+    D: Deref<Target = T>,
+{
+    type Remainder = U;
+
+    fn provide_with(self, context: CloneDependencyRefWith<D, C>) -> (T, Self::Remainder) {
+        let context = context.into_inner();
+        let dependency = self.provide_ref_with(context).clone();
+        (dependency, self)
+    }
+}
+
+impl<'me, T, U, D, C> ProvideRefWith<'me, T, CloneDependencyRefWith<D, C>> for U
+where
+    T: Clone,
+    U: ProvideRefWith<'me, D, C> + ?Sized,
+    D: Deref<Target = T>,
+{
+    fn provide_ref_with(&'me self, context: CloneDependencyRefWith<D, C>) -> T {
+        let context = context.into_inner();
+        let dependency = self.provide_ref_with(context);
+        dependency.clone()
+    }
+}
+
+impl<'me, T, U, D, C> ProvideMutWith<'me, T, CloneDependencyRefWith<D, C>> for U
+where
+    T: Clone,
+    U: ProvideRefWith<'me, D, C> + ?Sized,
+    D: Deref<Target = T>,
+{
+    fn provide_mut_with(&'me mut self, context: CloneDependencyRefWith<D, C>) -> T {
+        let context = context.into_inner();
+        let dependency = (*self).provide_ref_with(context);
+        dependency.clone()
     }
 }

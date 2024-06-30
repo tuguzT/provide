@@ -1,15 +1,6 @@
-use core::{convert::Infallible, ops::Deref};
+use core::convert::Infallible;
 
-use crate::{
-    context::{
-        clone::{CloneDependencyMutWith, CloneDependencyRefWith, CloneDependencyWith},
-        convert::{FromDependencyMutWith, FromDependencyRefWith, FromDependencyWith},
-        Empty,
-    },
-    Provide, With,
-};
-
-use super::{ProvideMutWith, ProvideRefWith};
+use crate::{context::Empty, Provide};
 
 /// Type of provider which provides dependency by *value*,
 /// but with additional context provided by the caller.
@@ -45,98 +36,6 @@ where
 
     fn provide_with(self, _: Empty) -> (T, Self::Remainder) {
         self.provide()
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, FromDependencyWith<D, C>> for U
-where
-    U: ProvideWith<D, C>,
-    D: Into<T>,
-{
-    type Remainder = U::Remainder;
-
-    fn provide_with(self, context: FromDependencyWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let (dependency, remainder) = self.provide_with(context);
-        let dependency = dependency.into();
-        (dependency, remainder)
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, FromDependencyRefWith<D, C>> for U
-where
-    U: for<'any> ProvideRefWith<'any, D, C>,
-    D: Into<T>,
-{
-    type Remainder = U;
-
-    fn provide_with(self, context: FromDependencyRefWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let dependency = self.provide_ref_with(context);
-        let dependency = dependency.into();
-        (dependency, self)
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, FromDependencyMutWith<D, C>> for U
-where
-    U: for<'any> ProvideMutWith<'any, D, C>,
-    D: Into<T>,
-{
-    type Remainder = U;
-
-    fn provide_with(mut self, context: FromDependencyMutWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let dependency = self.provide_mut_with(context);
-        let dependency = dependency.into();
-        (dependency, self)
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, CloneDependencyWith<D, C>> for U
-where
-    U: ProvideWith<D, C>,
-    U::Remainder: With<D>,
-    D: Into<T> + Clone,
-{
-    type Remainder = <U::Remainder as With<D>>::Output;
-
-    fn provide_with(self, context: CloneDependencyWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let (original_dependency, remainder) = self.provide_with(context);
-        let dependency = original_dependency.clone().into();
-        let remainder = remainder.with(original_dependency);
-        (dependency, remainder)
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, CloneDependencyRefWith<D, C>> for U
-where
-    T: Clone,
-    U: for<'any> ProvideRefWith<'any, D, C>,
-    D: Deref<Target = T>,
-{
-    type Remainder = U;
-
-    fn provide_with(self, context: CloneDependencyRefWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let dependency = self.provide_ref_with(context).clone();
-        (dependency, self)
-    }
-}
-
-impl<T, U, D, C> ProvideWith<T, CloneDependencyMutWith<D, C>> for U
-where
-    T: Clone,
-    U: for<'any> ProvideMutWith<'any, D, C>,
-    D: Deref<Target = T>,
-{
-    type Remainder = U;
-
-    fn provide_with(mut self, context: CloneDependencyMutWith<D, C>) -> (T, Self::Remainder) {
-        let context = context.into_inner();
-        let dependency = self.provide_mut_with(context).clone();
-        (dependency, self)
     }
 }
 

@@ -1,9 +1,6 @@
-use core::{convert::Infallible, ops::Deref};
+use core::convert::Infallible;
 
-use crate::{
-    context::{clone::CloneDependencyRefWith, convert::FromDependencyRefWith, Empty},
-    ProvideRef,
-};
+use crate::{context::Empty, ProvideRef};
 
 /// Type of provider which provides dependency by *shared reference*,
 /// but with additional context provided by the caller.
@@ -33,31 +30,6 @@ where
 {
     fn provide_ref_with(&'me self, _: Empty) -> T {
         self.provide_ref()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideRefWith<'me, T, FromDependencyRefWith<D, C>> for U
-where
-    U: ProvideRefWith<'me, D, C> + ?Sized,
-    D: Into<T>,
-{
-    fn provide_ref_with(&'me self, context: FromDependencyRefWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = (*self).provide_ref_with(context);
-        dependency.into()
-    }
-}
-
-impl<'me, T, U, D, C> ProvideRefWith<'me, T, CloneDependencyRefWith<D, C>> for U
-where
-    T: Clone,
-    U: ProvideRefWith<'me, D, C> + ?Sized,
-    D: Deref<Target = T>,
-{
-    fn provide_ref_with(&'me self, context: CloneDependencyRefWith<D, C>) -> T {
-        let context = context.into_inner();
-        let dependency = self.provide_ref_with(context);
-        dependency.clone()
     }
 }
 
