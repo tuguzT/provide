@@ -1,3 +1,10 @@
+use core::{convert::Infallible, ops::Deref};
+
+use crate::{
+    context::{clone::CloneDependencyRefWith, convert::FromDependencyRefWith, Empty},
+    ProvideRef,
+};
+
 /// Type of provider which provides dependency by *shared reference*,
 /// but with additional context provided by the caller.
 ///
@@ -18,6 +25,40 @@ pub trait ProvideRefWith<'me, T, C> {
     /// todo!()
     /// ```
     fn provide_ref_with(&'me self, context: C) -> T;
+}
+
+impl<'me, T, U> ProvideRefWith<'me, T, Empty> for U
+where
+    U: ProvideRef<'me, T> + ?Sized,
+{
+    fn provide_ref_with(&'me self, _: Empty) -> T {
+        self.provide_ref()
+    }
+}
+
+impl<'me, T, U, D, C> ProvideRefWith<'me, T, FromDependencyRefWith<D, C>> for U
+where
+    U: ProvideRefWith<'me, D, C> + ?Sized,
+    D: Into<T>,
+{
+    fn provide_ref_with(&'me self, context: FromDependencyRefWith<D, C>) -> T {
+        let context = context.into_inner();
+        let dependency = (*self).provide_ref_with(context);
+        dependency.into()
+    }
+}
+
+impl<'me, T, U, D, C> ProvideRefWith<'me, T, CloneDependencyRefWith<D, C>> for U
+where
+    T: Clone,
+    U: ProvideRefWith<'me, D, C> + ?Sized,
+    D: Deref<Target = T>,
+{
+    fn provide_ref_with(&'me self, context: CloneDependencyRefWith<D, C>) -> T {
+        let context = context.into_inner();
+        let dependency = self.provide_ref_with(context);
+        dependency.clone()
+    }
 }
 
 /// Type of provider which can provide dependency by *shared reference*,
@@ -45,59 +86,14 @@ pub trait TryProvideRefWith<'me, T, C> {
     fn try_provide_ref_with(&'me self, context: C) -> Result<T, Self::Error>;
 }
 
-mod impls {
-    use core::{convert::Infallible, ops::Deref};
+impl<'me, T, U, C> TryProvideRefWith<'me, T, C> for U
+where
+    U: ProvideRefWith<'me, T, C> + ?Sized,
+{
+    type Error = Infallible;
 
-    use crate::{
-        context::{clone::CloneDependencyRefWith, convert::FromDependencyRefWith, Empty},
-        ProvideRef,
-    };
-
-    use super::{ProvideRefWith, TryProvideRefWith};
-
-    impl<'me, T, U> ProvideRefWith<'me, T, Empty> for U
-    where
-        U: ProvideRef<'me, T> + ?Sized,
-    {
-        fn provide_ref_with(&'me self, _: Empty) -> T {
-            self.provide_ref()
-        }
-    }
-
-    impl<'me, T, U, C> TryProvideRefWith<'me, T, C> for U
-    where
-        U: ProvideRefWith<'me, T, C> + ?Sized,
-    {
-        type Error = Infallible;
-
-        fn try_provide_ref_with(&'me self, context: C) -> Result<T, Self::Error> {
-            let provide_ref_with = self.provide_ref_with(context);
-            Ok(provide_ref_with)
-        }
-    }
-
-    impl<'me, T, U, D, C> ProvideRefWith<'me, T, FromDependencyRefWith<D, C>> for U
-    where
-        U: ProvideRefWith<'me, D, C> + ?Sized,
-        D: Into<T>,
-    {
-        fn provide_ref_with(&'me self, context: FromDependencyRefWith<D, C>) -> T {
-            let context = context.into_inner();
-            let dependency = (*self).provide_ref_with(context);
-            dependency.into()
-        }
-    }
-
-    impl<'me, T, U, D, C> ProvideRefWith<'me, T, CloneDependencyRefWith<D, C>> for U
-    where
-        T: Clone,
-        U: ProvideRefWith<'me, D, C> + ?Sized,
-        D: Deref<Target = T>,
-    {
-        fn provide_ref_with(&'me self, context: CloneDependencyRefWith<D, C>) -> T {
-            let context = context.into_inner();
-            let dependency = self.provide_ref_with(context);
-            dependency.clone()
-        }
+    fn try_provide_ref_with(&'me self, context: C) -> Result<T, Self::Error> {
+        let provide_ref_with = self.provide_ref_with(context);
+        Ok(provide_ref_with)
     }
 }
