@@ -51,7 +51,7 @@ pub trait TryProvide<T>: Sized {
     type Error;
 
     /// Tries to provide dependency by *value*, also returning
-    /// [remaining part](Provide::Remainder) of the provider on success.
+    /// [remaining part](TryProvide::Remainder) of the provider on success.
     ///
     /// # Examples
     ///
