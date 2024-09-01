@@ -46,7 +46,7 @@ pub trait ProvideMut<'me, T> {
     /// ```
     ///
     /// You can also provide your dependency via cheap mutable-to-mutable reference conversion
-    /// thanks to implementation for all types which implement [`AsRef`]:
+    /// thanks to implementation for all types which implement [`AsMut`]:
     ///
     /// ```
     /// use provide::ProvideMut;
