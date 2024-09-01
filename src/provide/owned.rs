@@ -103,6 +103,7 @@ pub trait Provide<T>: Sized {
     /// let (Wrapper(dependency), _): (Wrapper<_>, _) = provider.provide();
     /// assert_eq!(dependency, MyDependency { foo: 1, bar: 2.0 });
     /// ```
+    #[must_use = "this call returns dependency and remaining part of the provider"]
     fn provide(self) -> (T, Self::Remainder);
 }
 

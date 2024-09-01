@@ -25,6 +25,7 @@ pub trait ProvideWith<T, C>: Sized {
     ///
     /// todo!()
     /// ```
+    #[must_use = "this call returns dependency and remaining part of the provider"]
     fn provide_with(self, context: C) -> (T, Self::Remainder);
 }
 

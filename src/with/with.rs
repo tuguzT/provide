@@ -19,6 +19,7 @@ pub trait With<T>: Sized {
     ///
     /// todo!()
     /// ```
+    #[must_use]
     fn with(self, dependency: T) -> Self::Output;
 }
 
