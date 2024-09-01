@@ -3,7 +3,7 @@ use core::convert::Infallible;
 /// Type of provider which provides dependency by reference.
 ///
 /// This trait can be interpreted as an extension of [`AsRef`] trait
-/// but with the ability to return not only plain shared references.
+/// but with the ability to return not only plain references.
 ///
 /// See [crate] documentation for more.
 pub trait ProvideRef<'me, T> {
@@ -119,7 +119,7 @@ where
 /// Type of provider which can provide dependency by reference or fail.
 ///
 /// This trait can be interpreted as an extension of [`AsRef`] trait
-/// but with the ability to return not only plain shared references.
+/// but with the ability to return not only plain references.
 ///
 /// See [crate] documentation for more.
 pub trait TryProvideRef<'me, T> {
