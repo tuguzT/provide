@@ -12,7 +12,6 @@
 #![no_std]
 
 pub use self::{
-    context::Context,
     provide::{Provide, ProvideMut, ProvideRef, TryProvide, TryProvideMut, TryProvideRef},
     with::With,
 };
