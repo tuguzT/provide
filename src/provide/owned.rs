@@ -1,6 +1,6 @@
 use core::convert::Infallible;
 
-/// Type of provider which provides dependency by *value*.
+/// Type of provider which provides dependency by value.
 ///
 /// This trait can be interpreted as an extension of [`Into`] trait
 /// but with the ability to return remaining part of the provider to be used later
@@ -11,7 +11,7 @@ pub trait Provide<T>: Sized {
     /// Remaining part of the provider after providing dependency by value.
     type Remainder;
 
-    /// Provides dependency by *value*, also returning
+    /// Provides dependency by value, also returning
     /// [remaining part](Provide::Remainder) of the provider.
     ///
     /// # Examples
@@ -47,17 +47,8 @@ pub trait Provide<T>: Sized {
     /// ```
     /// use provide::Provide;
     ///
-    /// struct Provider(i32);
-    ///
-    /// impl From<Provider> for i32 {
-    ///     fn from(provider: Provider) -> Self {
-    ///         let Provider(dependency) = provider;
-    ///         dependency
-    ///     }
-    /// }
-    ///
-    /// let provider = Provider(1);
-    /// let (dependency, _): (i32, _) = provider.provide();
+    /// let provider: i32 = 1;
+    /// let (dependency, _): (i64, _) = provider.provide();
     /// assert_eq!(dependency, 1);
     /// ```
     ///
@@ -127,7 +118,7 @@ where
     }
 }
 
-/// Type of provider which can provide dependency by *value* or fail.
+/// Type of provider which can provide dependency by value or fail.
 ///
 /// This trait can be interpreted as an extension of [`TryInto`] trait
 /// but with the ability to return remaining part of the provider on success to be used later
@@ -141,7 +132,7 @@ pub trait TryProvide<T>: Sized {
     /// The type returned in the event of an error.
     type Error;
 
-    /// Tries to provide dependency by *value*, also returning
+    /// Tries to provide dependency by value, also returning
     /// [remaining part](TryProvide::Remainder) of the provider on success.
     ///
     /// # Examples
