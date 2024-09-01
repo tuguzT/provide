@@ -26,8 +26,8 @@ fn by_value() {
     }
 
     let provider = GenericProvider(1);
-    let context = WrapOptionWith::<()>::default();
-    let (dependency, _) = ProvideWith::<_, WrapOptionWith<()>>::provide_with(provider, context);
+    let context = WrapOptionWith::default();
+    let (dependency, _) = provider.provide_with(context);
     assert_eq!(dependency, Some(1));
 }
 
@@ -55,7 +55,7 @@ fn by_ref() {
     }
 
     let provider = GenericProvider("hello");
-    let context = WrapOptionWith::<()>::default();
+    let context = WrapOptionWith::default();
     let dependency = provider.provide_ref_with(context);
     assert_eq!(dependency, Some("hello"));
 }
@@ -84,7 +84,7 @@ fn by_mut() {
     }
 
     let mut provider = GenericProvider([1, 2, 3, 4, 5]);
-    let context = WrapOptionWith::<()>::default();
+    let context = WrapOptionWith::default();
     let dependency = provider.provide_mut_with(context);
     assert_eq!(dependency, Some([1, 2, 3, 4, 5].as_mut_slice()));
 }
